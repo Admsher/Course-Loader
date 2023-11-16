@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+<head>
+    <style>
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .button2 {
+            background-color: #008CBA;
+        }
+
+        /* Blue */
+        .button3 {
+            background-color: #f44336;
+        }
+
+        /* Red */
+        .button4 {
+            background-color: #e7e7e7;
+            color: black;
+        }
+
+        /* Gray */
+        .button5 {
+            background-color: #555555;
+        }
+
+        /* Black */
+    </style>
+</head>
+{% block content %}
+<br><br>
+<center><h1><b>User Login</b></h1></center>
+<br><br>
+
+<center>
+    <form action="" method=POST>
+        {% csrf_token %}
+        <form>
+            <div class="form-group">
+                <input type="text" class="form-control" name="username" aria-describedby="emailHelp"
+                    placeholder="Username">
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="password" class="form-control" name="password" placeholder="Password">
+            </div>
+            <br />
+            <input type="submit" style="background-color: #4CAF50;-webkit-text-fill-color: #e7e7e7;width: 100px;height: 40px;shape-margin: 0% ;border-color: #ffffff;" value="Confirm" >
+
+        </form>
+</center>
+<br />
+{% endblock %}

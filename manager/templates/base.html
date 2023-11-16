@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html lang="eng">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<!-- <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script> -->
+
+<style>
+    .center {
+        position: absolute;
+        width: 780px;
+        height: 650px;
+        left: 0%;
+        top: 47%;
+        margin-left: 0px;
+        margin-top: -325px;
+    }
+</style>
+
+<head>
+    <div class="w3-container w3-teal">
+        <p>
+            <br>
+
+        <h2><img src="https://th.bing.com/th/id/OIP.OZN9slrP_2k1kP6tredEPQHaEK?pid=ImgDet&rs=1" width="200" height="60"> Course Loader</h2>
+
+
+        <p align="right">
+            <a href="{% url 'login'%}" class="w3-bar-item w3-button w3-mobile w3-hover-teal"> <b>Logout</b></a>
+        </p>
+
+    </div>
+
+</head>
+
+<body>
+
+    <center>
+        <div class="container">
+            {% if messages%}
+            {%for message in messages%}
+            <div class="alert alert-warning" role="alert">
+                <small> {{ message }} </small>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </center>
+
+
+    </div>
+
+    {% block content %}
+
+    {% endblock %}
+
+    <div style="  position:absolute;
+    padding-top: 200px;
+    padding-bottom: 10px;
+    width:100%;
+    height:50px;  color:black; " >
+        <center>
+
+            <h6> Copyright (c) @BITS Pilani {{ current_year }} </h6>
+        </center>
+    </div>
+
+
+</body>
+
+
+    
+
+</html>

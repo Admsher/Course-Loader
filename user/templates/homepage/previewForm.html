@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{%include 'homepage/navbar.html' %}
+<style>
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
+    .button2 {
+        background-color: #008CBA;
+    }
+
+    /* Blue */
+    .button3 {
+        background-color: #f44336;
+    }
+
+    /* Red */
+    .button4 {
+        background-color: #e7e7e7;
+        color: black;
+    }
+
+    /* Gray */
+    .button5 {
+        background-color: #555555;
+    }
+
+    /* Black */
+</style>
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 80%;
+    }
+
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+
+<body>
+    <br /> <br /> <br /><br /> <br /> <br />
+    <center>
+        <table>
+            <th>
+                <center>
+                    {{CDC_name}}
+                </center>
+            </th>
+            <tr>
+
+                <td>
+                    <center>
+
+                        Number of Tutorials: {{Tutorial}}
+                    </center>
+                </td>
+
+            </tr>
+            <tr>
+
+                <td>
+                    <center>
+
+                        Number of Lectures: {{Lectures}}
+                    </center>
+                </td>
+
+            </tr>
+            <tr>
+
+                <td>
+                    <center>
+                        Number of Labs: {{Labs}}
+
+                    </center>
+                </td>
+
+            </tr>
+            <tr>
+
+                <td>
+                    <center>
+
+                        Instructor In Charge:
+                    </center>
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td>
+                    <center>
+
+                        Instructors(List): {%for faculty in Lec_Faculty%}
+                        <br> Lec:{{faculty}}</br> {%endfor%}
+                        {%for faculty in Tut_Faculty%}
+                        <br> Tut:{{faculty}}</br> {%endfor%}
+                        {%for faculty in Lab_Faculty%}
+                        <br> Lab:{{faculty}}</br> {%endfor%}
+
+                        <!-- {{Tut_Faculty}}\n
+                                       {{Lab_Faculty}} -->
+                    </center>
+                </td>
+
+            </tr>
+
+        </table>
+    </center>
+    <br><br>
+    <center>
+        Do you want keep the same order
+    </center>
+    <center>
+        <form action="" method="post">
+            {%csrf_token %}
+        <a href="javascript:history.back()">
+            <input type="submit" value="Yes" class="button" />
+         </a>
+        </form>
+        <!-- <a href="javascript:history.back()"   ><input type="button" value="Yes" /></a> -->
+        <a href="{%url 'form_CDC'%}?data={{CDC_name}}" name="{{CDC_name}}" class="button button3">No</a>
+    </center>
+
+
+</body>
+
+{% endblock %}

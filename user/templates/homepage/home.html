@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{%include 'homepage/navbar.html' %}
+
+
+
+
+<head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #dddddd;
+        }
+    </style>
+
+
+</head>
+<br /> <br />
+
+{%for announcements in announcement%}
+
+<center>
+    <table>
+        <tr>
+            <th>
+                <center>
+                    {{announcements.title}}
+                </center>
+            </th>
+        </tr>
+        <tr>
+            <br /><br /><br />
+            <td>
+                <center>
+                    {{announcements.description}}
+                </center>
+            </td>
+
+        </tr>
+    </table>
+</center>
+{%endfor%}
+
+{% endblock %}
