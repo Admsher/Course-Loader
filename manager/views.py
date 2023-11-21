@@ -2,10 +2,12 @@ from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 import datetime
+from django.http import HttpResponseRedirect
 
 # Create your views here.
 def base(request):
     current_year=datetime.date.today()
+    
     return render(request,'base.html',{"current_year":current_year})
 
 

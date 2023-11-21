@@ -1,6 +1,8 @@
-
+# from django.conf.urls import url
 from django.urls import path
+# from django.conf import settings
 from . import views
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('home_page', views.home, name="home"),
@@ -17,5 +19,7 @@ urlpatterns = [
     path(r'form_Faculty_Lec',views.form_faculty_lec,name='form_Faculty_Lec'),
     path(r'form_Faculty_Tut',views.form_faculty_tut,name='form_Faculty_Tut'),
     path(r'form_Faculty_Lab',views.form_faculty_lab,name='form_Faculty_Lab'),
-    path('previewForm',views.previewForm,name='previewForm')
+    path('previewForm',views.previewForm,name='previewForm'),
+    # url(r'^logout/$', views.logout, {'next_page': settings.LOGOUT_REDIRECT_URL}, name='logout')
+    path("logout", views.logout_user, name="logout")
 ]

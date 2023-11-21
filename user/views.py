@@ -31,10 +31,13 @@ from localStoragePy import localStoragePy
 from django.forms.models import model_to_dict
 
 
-
+def logout_user(request):
+    logout(request)
+    return  HttpResponseRedirect('login_user?logout=True')
 
 localStorage = localStoragePy('user', 'text')
 def login_user(request):
+    
     
     if request.method == "POST":
         username = request.POST['username']
@@ -44,7 +47,13 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home')
+            if department_description.objects.get(Department_HOD=request.user).Lock==False:
+                return redirect('home')
+            else:
+                messages.success(
+                request, "Administrator has locked the website.")
+                return redirect('login')
+        
 
         else:
             messages.success(
@@ -52,6 +61,7 @@ def login_user(request):
             return redirect('login')
 
     else:
+        
         return render(request, 'authentication/login.html', {})
 
 
@@ -64,7 +74,8 @@ def home(request):
 
 
 def previousrecord(request):
-    return render(request, 'homepage/previousrecord.html', {})
+    link=department_description.objects.get(Department_HOD=request.user).Previous_records
+    return render(request, 'homepage/previousrecord.html', {'link':link})
 
 
 def upload(request):
@@ -88,8 +99,9 @@ def choose_new_table(request):
     filecount=0
     academic_year_folder=str(str(datetime.date.today().year)+"-"+str(int(datetime.date.today().year)+1))
     Department_name = department_description.objects.get(Department_HOD=request.user)
-    path=str(academic_year_folder)+"/"+str(Department_name)
-    
+    current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
+    path=str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name)
+   
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -117,7 +129,7 @@ def choose_new_table(request):
         df=""
         message="Table not created yet."
         tablePresent=False
-
+    
     if request.GET.get("elective_hd"):
             return Elective_HD_list(request=request)
     if request.GET.get("elective_fd"):
@@ -127,27 +139,27 @@ def choose_new_table(request):
         form=Semform(request.POST or None)
         if form.is_valid():
            
-            semester=form.cleaned_data['Sem_choice']
+        
             file=load_workbook("Courses for Course Load Submission "+str(Department_name)+".xlsx")
             sheet=file.get_sheet_by_name(str(Department_name))
             sheet["J2"]=form.cleaned_data["Sidenote"]
-            file_path=Path(path+"/Courses for Course Load Submission Sem "+str(semester)+" "+str(Department_name)+".xlsx")
+            file_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+".xlsx")
             if file_path.exists():
                 file_old=load_workbook(file_path)
-                file_old_path=Path(path+"/Courses for Course Load Submission Sem "+str(semester)+" "+str(Department_name)+" Old_1"+".xlsx")
-                file_older_path=Path(path+"/Courses for Course Load Submission Sem "+str(semester)+" "+str(Department_name)+" Old_2"+".xlsx")
+                file_old_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+" Old_1"+".xlsx")
+                file_older_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+" Old_2"+".xlsx")
                 if file_old_path.exists():
                     file_older=load_workbook(file_old_path)
                     file_older.save(file_older_path)
                 else:
                     file_old.save(file_old_path)
             
-            file.save(path+"/Courses for Course Load Submission Sem "+str(semester)+" "+str(Department_name)+".xlsx")
+            file.save(path+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+".xlsx")
     else:
         form=Semform()
     
     
-    return render(request, 'homepage/choose_new_table.html', {"message":message,"table":df,"bool":tablePresent,"form":form,"attempts":attempts_remaining})
+    return render(request, 'homepage/choose_new_table.html', {"message":message,"table":df,"bool":tablePresent,"form":form,"attempts":attempts_remaining,"sem":current_sem})
 
  
 def CDC_FD_list(request):
@@ -156,7 +168,7 @@ def CDC_FD_list(request):
     return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department})
 
 def CDC_HD_list(request):
-    Department_name = department_description.objects.get()
+    Department_name = department_description.objects.get(Department_HOD=request.user)
     CDC_department = (CDC_HD.objects.filter(CDC_HD_Department=Department_name))
 
    
@@ -172,17 +184,18 @@ def previewForm(request):
            cdc_id = request.GET.get('data')
            localStorage.setItem('cdc_id',cdc_id)
           
-
+    current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     academic_year_folder=str(str(datetime.date.today().year-1)+"-"+str(int(datetime.date.today().year)))
     Department_name = department_description.objects.get(Department_HOD=request.user)
-    path=str(academic_year_folder)+"/"+str(Department_name)
+    path=str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name)
     
     for filename in os.listdir(path):
         if filename.endswith('xlsx'): 
             filepath=os.path.join(path, filename)
        
     try:
-        database=pd.read_excel(filepath,sheet_name=str(department_description.objects.get()))
+        database=pd.read_excel(filepath,sheet_name=str(Department_name))
+        
        
     
     except FileNotFoundError:
@@ -219,7 +232,7 @@ def previewForm(request):
     Lecture_Faculty=[]
     Tutorial_Faculty=[]
     Labarotary_Faculty=[]
-    FIC_preview=str(database.iat[int(row_number-1),6])
+    FIC_preview=str(database.iat[int(row_number-1),5])
     for i in range(0,Number_of_Lectures):
      if str(database.iat[int(i+row_number-1),6])=="nan":
          Lecture_Faculty.append("No Data")
@@ -308,6 +321,9 @@ def form_faculty_lec(request):
  Lab_number=request.session["Lab"]
  Lecture_Number=request.session["Lec"]
  Tutorial_number=request.session["Tuts"] 
+ localStorage.setItem('Lab_number',Lab_number)
+ localStorage.setItem('Tutorial_number',Tutorial_number)
+ localStorage.setItem('Lecture_number',Lecture_Number)
 
  facultyform1=facultyform1user(user=request.user)
  Lectureformset=formset_factory(facultyform1,extra=Lecture_Number)
@@ -334,7 +350,9 @@ def form_faculty_tut(request):
         Tut_Faculty=[]
         
         facultyform2=facultyform2user(user=request.user)
+        
         Tutformset=formset_factory(facultyform2,extra=Tutorial_number)
+    
         if request.method=="POST":
             form_tut=Tutformset(request.POST or None)
 
@@ -353,7 +371,11 @@ def form_faculty_lab(request):
          Lab_Faculty=[]
          
          facultyform3=facultyform3user(user=request.user)
-         Labformset=formset_factory(facultyform3,extra=Lab_number)
+         try:
+            Labformset=formset_factory(facultyform3,extra=Lab_number)
+         except NameError:
+             localStorage.getItem('Lab_number') 
+             Labformset=formset_factory(facultyform3,extra=Lab_number)
          if request.method=="POST":
             form_lab=Labformset(request.POST or None)
             submitted=True
@@ -361,12 +383,12 @@ def form_faculty_lab(request):
                 for forms in form_lab:
                     Lab_Faculty.append(forms.cleaned_data['Faculty'])
                 try:
-                    create_file(FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
-                    return choose_new_table(request=request)
+                    create_file(request=request,FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
+                    return  HttpResponseRedirect('choose_new_table')
                 except NameError:
                     FIC=localStorage.getItem('cdc_FIC')
-                    create_file(FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
-                    return choose_new_table(request=request)
+                    create_file(request=request,FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
+                    return  HttpResponseRedirect('choose_new_table')
                 
          return render(request, 'homepage/facultyForm_Lab.html', {"Labformset":Labformset,"submitted":submitted})
 
@@ -436,12 +458,14 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
        for i in range(0,Lecture):
            try:
             sheet.cell(row=last_row+i+1, column=5).value="L"
+            sheet.cell(row=4+i, column=4).value=i+1
             sheet.cell(row=last_row+i+1, column=7).value=str(Faculty_Lec[i])
            except IndexError:
                 break
        for i in range(0,Tutorial):
             try:
                 sheet.cell(row=last_row+Lecture+i+1, column=5).value="T"
+                sheet.cell(row=4+Lecture+i, column=4).value=i+1
                 sheet.cell(row=last_row+Lecture+i+1, column=7).value=str(Faculty_Tut[i])
             except IndexError:
                 break
@@ -449,6 +473,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
        for i in range(0,Lab):
          try:
             sheet.cell(row=last_row+Tutorial+Lecture+i+1, column=5).value="P"
+            sheet.cell(row=4+Tutorial+Lecture+i, column=4).value=i+1
             
             sheet.cell(row=last_row+Lecture+Tutorial+i+1, column=7).value=str(Faculty_Lab[i])
          except IndexError:
@@ -488,12 +513,13 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                  print()
              Sheet['B4']=str(cdc_title)   
         for i in range(0,Lecture):
-           
+            Sheet.cell(row=4+i, column=4).value=i+1
             Sheet.cell(row=4+i, column=5).value="L"
             Sheet.cell(row=4+i, column=7).value=str(Faculty_Lec[i])
         for i in range(0,Tutorial):
           try: 
             Sheet.cell(row=4+Lecture+i, column=5).value="T"
+            Sheet.cell(row=4+Lecture+i, column=4).value=i+1
            
             Sheet.cell(row=4+Lecture+i, column=7).value=str(Faculty_Tut[i])
           except IndexError:
@@ -501,6 +527,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
         for i in range(0,Lab):
          try:
             Sheet.cell(row=4+Tutorial+Lecture+i, column=5).value="P"
+            Sheet.cell(row=4+Tutorial+Lecture+i, column=4).value=i+1
           
             Sheet.cell(row=4+Tutorial+Lecture+i, column=7).value=str(Faculty_Lab[i])
          except IndexError:
@@ -559,7 +586,7 @@ def Elective_HD_list(request):
             open(str(Department_name)+'_HD.pkl','a')
             with open(str(Department_name)+'_HD.pkl', 'rb') as f:
                 data = pickle.load(f)
-    # data_dict=model_to_dict(data)
+  
     
     form_Elective=Electiveform_HDuser(user=request.user)
     Elective_list= data

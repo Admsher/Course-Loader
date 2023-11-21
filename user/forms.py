@@ -53,7 +53,6 @@ def Electiveform_HDuser(user):
         return ElectiveForm_HD
 
 class Semform(forms.Form):
-      Sem_choice=forms.ChoiceField(choices=[(1,"Sem 1"),(2,"Sem 2")],label="For Semester")
       Sidenote=forms.CharField(widget=forms.TextInput(attrs={'size':80}),required=False)
 
   

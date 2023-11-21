@@ -2,9 +2,112 @@
 
 {% block content %}
 {%include 'homepage/navbar.html' %}
+<head>
+    <style>
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .button2 {
+            background-color: #008CBA;
+        }
+
+        /* Blue */
+        .button3 {
+            background-color: #f44336;
+        }
+
+        /* Red */
+        .button4 {
+            background-color: #e7e7e7;
+            color: black;
+        }
+
+        /* Gray */
+        .button5 {
+            background-color: #c6c6c6;
+            
+            padding-top: 0.1%;
+            padding-bottom: 0.3%;
+            padding-left: 0.9%;
+            padding-right: 1.1%;
+
+            margin-left: 90%;
+            font-size: 15px;
+            margin-top: 0px;
+          
+            border-radius: 25px;
+        }
+
+        /* Black */
+    </style>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+ <style>
+  .popup {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+  }
+
+  .popup-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888888;
+    width: 30%;
+    font-weight: bolder;
+  }
+
+  .popup-content button {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .show {
+    display: block;
+  }
+
+  h1 {
+    color: green;
+  }
+</style>
+</head>
 <br /> <br />
 <p align="left">
-<h1>Previous Records</h1>
-</p>
+
+</p></br></br></br></br>
+<center>To access previous records click here: <a href="{{link}}" class="button"> Records</a>  </center>
 
 {% endblock %}
