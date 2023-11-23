@@ -113,7 +113,7 @@ def choose_new_table(request):
         attempts_remaining=3-filecount
    
 
-        if attempts_remaining==0:
+        if attempts_remaining<=0:
             df=""
             message="Maximum submissions perfomed."
             tablePresent=False
@@ -225,14 +225,18 @@ def previewForm(request):
         Number_of_Tutorials=np.count_nonzero(section_list_numpy=="T")
         Number_of_Labs=np.count_nonzero(section_list_numpy=="P")
     except IndexError:
-        Number_of_Lectures='No previous data'
-        Number_of_Labs='No previous data'
-        Number_of_Tutorials='No previous Data'
+        Number_of_Lectures=0
+        Number_of_Labs=0
+        Number_of_Tutorials=0
 
     Lecture_Faculty=[]
     Tutorial_Faculty=[]
     Labarotary_Faculty=[]
-    FIC_preview=str(database.iat[int(row_number-1),5])
+    try:
+        FIC_preview=str(database.iat[int(row_number-1),5])
+    except TypeError:
+        FIC_preview=""
+    
     for i in range(0,Number_of_Lectures):
      if str(database.iat[int(i+row_number-1),6])=="nan":
          Lecture_Faculty.append("No Data")
@@ -253,25 +257,30 @@ def previewForm(request):
     
     try:
         cdc_title=CDC_FD.objects.get(CDC_ID=cdc_id).CDC_name   
+        localStorage.setItem("cdc_title",cdc_title)
     except ObjectDoesNotExist:
         print()
     try:
-        cdc_title=CDC_HD.objects.get(CDC_HD_ID=cdc_id).CDC_HD_name   
+        cdc_title=CDC_HD.objects.get(CDC_HD_ID=cdc_id).CDC_HD_name  
+        localStorage.setItem("cdc_title",cdc_title) 
     except ObjectDoesNotExist:
         print()
     try:
-        cdc_title=Elective_HD.objects.get(Elective_HD_ID=cdc_id).Elective_HD_name   
+        cdc_title=Elective_HD.objects.get(Elective_HD_ID=cdc_id).Elective_HD_name
+        localStorage.setItem("cdc_title",cdc_title)   
     except ObjectDoesNotExist:
         print()
     try:
-        cdc_title=Elective_FD.objects.get(Elective_ID=cdc_id).Elective_name   
+        cdc_title=Elective_FD.objects.get(Elective_ID=cdc_id).Elective_name
+        localStorage.setItem("cdc_title",cdc_title)   
     except ObjectDoesNotExist:
         print()
+   
         
     if request.method=="POST":
         
         create_file(request=request,FIC_name=FIC_preview,Lecture=Number_of_Lectures,Lab=Number_of_Labs,Tutorial=Number_of_Tutorials,Faculty_Lec=Lecture_Faculty,Faculty_Tut=Tutorial_Faculty,Faculty_Lab=Labarotary_Faculty)
-        return choose_new_table(request=request)
+        return  HttpResponseRedirect('choose_new_table')
     return render(request,'homepage/previewForm.html',{'Lectures':Number_of_Lectures,'Tutorial':Number_of_Tutorials,'Labs':Number_of_Labs,"CDC_name":cdc_title,"Lab_Faculty":Labarotary_Faculty,"Tut_Faculty":Tutorial_Faculty,"Lec_Faculty":Lecture_Faculty})
 
 
@@ -400,6 +409,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
         print(cdc_id)
     except NameError:
         cdc_id=localStorage.getItem('cdc_id')
+    cdc_title=localStorage.getItem("cdc_title")
     Department_name = department_description.objects.get(Department_HOD=request.user)
    
 
@@ -428,44 +438,29 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                     break
             if next_row_entry=="":
                 next_row_entry=sheet.max_row
-            for i in range(row_if_present,next_row_entry):
-                sheet.delete_rows(row_if_present)
+            print(next_row_entry)
+            sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present+1))
            
        last_row=sheet.max_row
-       sheet.cell(row=last_row+1,column=6).value=str(FIC_name)
-       sheet.cell(row=last_row+1,column=1).value=str(cdc_id)
-       try:
-         sheet.cell(row=last_row+1,column=2).value=str(cdc_title)
-       except UnboundLocalError:
-             try:
-                cdc_title=CDC_FD.objects.get(CDC_ID=cdc_id).CDC_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=CDC_HD.objects.get(CDC_HD_ID=cdc_id).CDC_HD_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=Elective_HD.objects.get(Elective_HD_ID=cdc_id).Elective_HD_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=Elective_FD.objects.get(Elective_ID=cdc_id).Elective_name   
-             except ObjectDoesNotExist:
-                 print()
-             sheet.cell(row=last_row+1,column=2).value=str(cdc_title)
-           
+       
+     
        for i in range(0,Lecture):
-           try:
-            sheet.cell(row=last_row+i+1, column=5).value="L"
-            sheet.cell(row=4+i, column=4).value=i+1
-            sheet.cell(row=last_row+i+1, column=7).value=str(Faculty_Lec[i])
-           except IndexError:
-                break
+           if Lecture==0:
+               break
+           else:
+            try:
+                sheet.cell(row=last_row+i+1, column=5).value="L"
+                sheet.cell(row=last_row+i+1, column=4).value=i+1
+                sheet.cell(row=last_row+i+1, column=7).value=str(Faculty_Lec[i])
+                sheet.cell(row=last_row+1,column=6).value=str(FIC_name)
+                sheet.cell(row=last_row+1,column=1).value=str(cdc_id)
+                sheet.cell(row=last_row+1,column=2).value=str(cdc_title)
+            except IndexError:
+                    break
        for i in range(0,Tutorial):
             try:
                 sheet.cell(row=last_row+Lecture+i+1, column=5).value="T"
-                sheet.cell(row=4+Lecture+i, column=4).value=i+1
+                sheet.cell(row=Lecture+last_row+i+1, column=4).value=i+1
                 sheet.cell(row=last_row+Lecture+i+1, column=7).value=str(Faculty_Tut[i])
             except IndexError:
                 break
@@ -473,7 +468,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
        for i in range(0,Lab):
          try:
             sheet.cell(row=last_row+Tutorial+Lecture+i+1, column=5).value="P"
-            sheet.cell(row=4+Tutorial+Lecture+i, column=4).value=i+1
+            sheet.cell(row=Tutorial+Lecture+last_row+i+1, column=4).value=i+1
             
             sheet.cell(row=last_row+Lecture+Tutorial+i+1, column=7).value=str(Faculty_Lab[i])
          except IndexError:
@@ -490,32 +485,17 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
         Sheet["E3"]="Section"
         Sheet["F3"]="Instructor In Charge"
         Sheet["G3"]="Instructor"
-        Sheet["F4"]=str(FIC_name)
-        Sheet['A4']=str(cdc_id)
-        try:
-            Sheet['B4']=str(cdc_title)
-        except NameError:
-             try:
-                cdc_title=CDC_FD.objects.get(CDC_ID=cdc_id).CDC_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=CDC_HD.objects.get(CDC_HD_ID=cdc_id).CDC_HD_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=Elective_HD.objects.get(Elective_HD_ID=cdc_id).Elective_HD_name   
-             except ObjectDoesNotExist:
-                print()
-             try:
-                cdc_title=Elective_FD.objects.get(Elective_ID=cdc_id).Elective_name   
-             except ObjectDoesNotExist:
-                 print()
-             Sheet['B4']=str(cdc_title)   
+        
+       
+
         for i in range(0,Lecture):
             Sheet.cell(row=4+i, column=4).value=i+1
             Sheet.cell(row=4+i, column=5).value="L"
             Sheet.cell(row=4+i, column=7).value=str(Faculty_Lec[i])
+            Sheet['A4']=str(cdc_id)       
+            Sheet['B4']=str(cdc_title) 
+            Sheet["F4"]=str(FIC_name) 
+        
         for i in range(0,Tutorial):
           try: 
             Sheet.cell(row=4+Lecture+i, column=5).value="T"
@@ -567,13 +547,7 @@ def Elective_FD_list(request):
             except FileNotFoundError:
                     open(str(Department_name)+'_FD.pkl','a')
                     f=open(str(Department_name)+'_FD.pkl','wb')
-            
-        
-
-
     return render(request,"homepage/Elective_FD_list.html",{"form":form,"elective_list":Elective_list})
-
-
 
 
 def Elective_HD_list(request):
