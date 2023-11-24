@@ -74,12 +74,18 @@ def home(request):
 
 
 def previousrecord(request):
-    link=department_description.objects.get(Department_HOD=request.user).Previous_records
+    try:
+        link=department_description.objects.get(Department_HOD=request.user).Previous_records
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     return render(request, 'homepage/previousrecord.html', {'link':link})
 
 
 def upload(request):
-    Department=department_description.objects.get(Department_HOD=request.user)
+    try:
+        Department=department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     academic_year=str(str(datetime.date.today().year)+"/"+str(int(datetime.date.today().year)+1))
 
     context = {"academic_year":academic_year,"Department":Department}
@@ -98,7 +104,10 @@ def filldata(request):
 def choose_new_table(request):
     filecount=0
     academic_year_folder=str(str(datetime.date.today().year)+"-"+str(int(datetime.date.today().year)+1))
-    Department_name = department_description.objects.get(Department_HOD=request.user)
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     path=str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name)
    
@@ -163,12 +172,18 @@ def choose_new_table(request):
 
  
 def CDC_FD_list(request):
-    Department_name = department_description.objects.get(Department_HOD=request.user)
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     CDC_department = (CDC_FD.objects.filter(CDC_Department=Department_name))
     return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department})
 
 def CDC_HD_list(request):
-    Department_name = department_description.objects.get(Department_HOD=request.user)
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     CDC_department = (CDC_HD.objects.filter(CDC_HD_Department=Department_name))
 
    
@@ -343,9 +358,11 @@ def form_faculty_lec(request):
         form_lec=Lectureformset(request.POST or None)
        
         if form_lec.is_valid(): 
-            for forms in form_lec:
-                Lec_Faculty.append(forms.cleaned_data['Faculty'])
-    
+            try:
+             for forms in form_lec:
+                 Lec_Faculty.append(forms.cleaned_data['Faculty'])
+            except KeyError:
+                return HttpResponseRedirect('form_Faculty_Lec') 
            
             return  HttpResponseRedirect('form_Faculty_Tut')
                 
@@ -366,8 +383,11 @@ def form_faculty_tut(request):
             form_tut=Tutformset(request.POST or None)
 
             if form_tut.is_valid():
-                for forms in form_tut:
-                    Tut_Faculty.append(forms.cleaned_data['Faculty'])
+                try:
+                 for forms in form_tut:
+                     Tut_Faculty.append(forms.cleaned_data['Faculty'])
+                except KeyError:
+                    return HttpResponseRedirect('form_Faculty_Tut') 
 
                 return  HttpResponseRedirect('form_Faculty_Lab')
         return render(request, 'homepage/facultyForm_Tut.html', {"Tutformset":Tutformset})
@@ -389,8 +409,11 @@ def form_faculty_lab(request):
             form_lab=Labformset(request.POST or None)
             submitted=True
             if form_lab.is_valid():
-                for forms in form_lab:
-                    Lab_Faculty.append(forms.cleaned_data['Faculty'])
+                try:
+                    for forms in form_lab:
+                        Lab_Faculty.append(forms.cleaned_data['Faculty'])
+                except KeyError:
+                    return HttpResponseRedirect('form_Faculty_Lab') 
                 try:
                     create_file(request=request,FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
                     return  HttpResponseRedirect('choose_new_table')
@@ -438,7 +461,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                     break
             if next_row_entry=="":
                 next_row_entry=sheet.max_row
-            print(next_row_entry)
+          
             sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present+1))
            
        last_row=sheet.max_row
@@ -516,7 +539,10 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
 
 
 def Elective_FD_list(request):
-    Department_name = department_description.objects.get(Department_HOD=request.user)
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
     form_Elective=Electiveform_FDuser(user=request.user)
     try: 
         try:
@@ -547,11 +573,16 @@ def Elective_FD_list(request):
             except FileNotFoundError:
                     open(str(Department_name)+'_FD.pkl','a')
                     f=open(str(Department_name)+'_FD.pkl','wb')
+            (pickle.dump(Elective_list,f))        
     return render(request,"homepage/Elective_FD_list.html",{"form":form,"elective_list":Elective_list})
 
 
 def Elective_HD_list(request):
-   Department_name = department_description.objects.get(Department_HOD=request.user)
+   try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+   except TypeError:
+        return HttpResponseRedirect('login_user')
+   form_Elective=Electiveform_HDuser(user=request.user)
    try: 
     try:
         with open(str(Department_name)+'_HD.pkl', 'rb') as f:
@@ -562,7 +593,7 @@ def Elective_HD_list(request):
                 data = pickle.load(f)
   
     
-    form_Elective=Electiveform_HDuser(user=request.user)
+    
     Elective_list= data
     form=form_Elective()
     f.close()

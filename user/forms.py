@@ -23,20 +23,20 @@ def classformuser(user):
 def facultyform1user(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class facultyform1(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name))
+                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
                 
         return facultyform1
 
 def facultyform3user(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class facultyform3(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name))
+                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
         return facultyform3
 
 def facultyform2user(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class facultyform2(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name))
+                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
         return facultyform2
 
 

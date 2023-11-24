@@ -106,7 +106,7 @@
     <a href="{% url 'CDC_FD_list' %}" class="button button2">First Degree CDC</a>
 </center>
 <center>
-  <form >
+  <form  method="get">
     {% csrf_token %}
     <p><input type="submit" class="button" name="elective_fd" value="First Degree Electives"></input></p>
   </form>
@@ -117,7 +117,7 @@
     
 </center>
 <center>
-  <form>
+  <form method="get">
     {% csrf_token %}
     <input type="submit" class="button button4" name="elective_hd" value="Higher Degree Electives"></input>
   </form>
