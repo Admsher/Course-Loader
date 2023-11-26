@@ -128,7 +128,7 @@ def choose_new_table(request):
             tablePresent=False
 
         else:
-            df=pd.read_excel("Courses for Course Load Submission "+str(Department_name)+".xlsx",sheet_name=str(Department_name))
+            df=pd.read_excel("Pickles/Courses for Course Load Submission "+str(Department_name)+".xlsx",sheet_name=str(Department_name))
             df=df.drop([0])
             df=df.fillna("")
             message=""
@@ -149,7 +149,7 @@ def choose_new_table(request):
         if form.is_valid():
            
         
-            file=load_workbook("Courses for Course Load Submission "+str(Department_name)+".xlsx")
+            file=load_workbook("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
             sheet=file.get_sheet_by_name(str(Department_name))
             sheet["J2"]=form.cleaned_data["Sidenote"]
             file_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+".xlsx")
@@ -436,10 +436,10 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
     Department_name = department_description.objects.get(Department_HOD=request.user)
    
 
-    excel_file=Path("Courses for Course Load Submission "+str(Department_name)+".xlsx")
+    excel_file=Path("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
 
     if excel_file.exists():
-       file=load_workbook("Courses for Course Load Submission "+str(Department_name)+".xlsx")
+       file=load_workbook("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
        sheet=file.get_sheet_by_name(str(Department_name))
        row_if_present=""
        next_row_entry=""
@@ -462,7 +462,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
             if next_row_entry=="":
                 next_row_entry=sheet.max_row
           
-            sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present+1))
+            sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present))
            
        last_row=sheet.max_row
        
@@ -496,7 +496,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
             sheet.cell(row=last_row+Lecture+Tutorial+i+1, column=7).value=str(Faculty_Lab[i])
          except IndexError:
                 break
-       file.save("Courses for Course Load Submission "+str(Department_name)+".xlsx")
+       file.save("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
 
     else:    
    
@@ -535,7 +535,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
             Sheet.cell(row=4+Tutorial+Lecture+i, column=7).value=str(Faculty_Lab[i])
          except IndexError:
             break
-        Wb_load.save("Courses for Course Load Submission "+str(Department_name)+".xlsx")
+        Wb_load.save("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
 
 
 def Elective_FD_list(request):
@@ -546,11 +546,11 @@ def Elective_FD_list(request):
     form_Elective=Electiveform_FDuser(user=request.user)
     try: 
         try:
-            with open(str(Department_name)+'_FD.pkl', 'rb') as f:
+            with open("Pickles/"+str(Department_name)+'_FD.pkl', 'rb') as f:
                 data = pickle.load(f)
         except FileNotFoundError:
-            open(str(Department_name)+'_FD.pkl','a')
-            with open(str(Department_name)+'_FD.pkl', 'rb') as f:
+            open("Pickles/"+str(Department_name)+'_FD.pkl','a')
+            with open("Pickles/"+str(Department_name)+'_FD.pkl', 'rb') as f:
                 data = pickle.load(f)
         data_dict=model_to_dict(data)
         Elective_list= data
@@ -569,10 +569,10 @@ def Elective_FD_list(request):
         if form.is_valid():
             Elective_list=form.cleaned_data['Elective_ID']
             try:    
-                    f=open(str(Department_name)+'_FD.pkl','wb')
+                    f=open("Pickles/"+str(Department_name)+'_FD.pkl','wb')
             except FileNotFoundError:
-                    open(str(Department_name)+'_FD.pkl','a')
-                    f=open(str(Department_name)+'_FD.pkl','wb')
+                    open("Pickles/"+str(Department_name)+'_FD.pkl','a')
+                    f=open("Pickles/"+str(Department_name)+'_FD.pkl','wb')
             (pickle.dump(Elective_list,f))        
     return render(request,"homepage/Elective_FD_list.html",{"form":form,"elective_list":Elective_list})
 
@@ -585,11 +585,11 @@ def Elective_HD_list(request):
    form_Elective=Electiveform_HDuser(user=request.user)
    try: 
     try:
-        with open(str(Department_name)+'_HD.pkl', 'rb') as f:
+        with open("Pickles/"+str(Department_name)+'_HD.pkl', 'rb') as f:
             data = pickle.load(f)
     except FileNotFoundError:
-            open(str(Department_name)+'_HD.pkl','a')
-            with open(str(Department_name)+'_HD.pkl', 'rb') as f:
+            open("Pickles/"+str(Department_name)+'_HD.pkl','a')
+            with open("Pickles/"+str(Department_name)+'_HD.pkl', 'rb') as f:
                 data = pickle.load(f)
   
     
@@ -610,10 +610,10 @@ def Elective_HD_list(request):
 
               
                 try:    
-                    f=open(str(Department_name)+'_HD.pkl','wb')
+                    f=open("Pickles/"+str(Department_name)+'_HD.pkl','wb')
                 except FileNotFoundError:
-                    open(str(Department_name)+'_HD.pkl','a')
-                    f=open(str(Department_name)+'_HD.pkl','wb')
+                    open("Pickles/"+str(Department_name)+'_HD.pkl','a')
+                    f=open("Pickles/"+str(Department_name)+'_HD.pkl','wb')
 
 
                 (pickle.dump(Elective_list,f))
