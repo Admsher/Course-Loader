@@ -1,5 +1,5 @@
 # Course Loader
-A web application for AUGSD to provide a platform for the head of department to submit the course load for he upcoming semesters.
+A web application for AUGSD to provide a platform for the head of department to submit the course load for the upcoming semesters.
 
 # Setting the application on server
 >Clone the repo
