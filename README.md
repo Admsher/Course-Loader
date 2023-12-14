@@ -2,12 +2,12 @@
 A web application for AUGSD to provide a platform for the head of department to submit the course load for the upcoming semesters.
 
 # Setting the application on server
->Clone the repo
->Use pip to install the packages given in requirements.txt. \n
->Keep the format of the files as provided examples in the repository.
->Be sure to delete all the files in the Pickles folder(if any) when deploying for a new semester.
->Be sure in a Department folder of the previous sem/year, there should be only one folder before deploying for instance, for academic year 2023-2024 Sem 1, make sure that all the department folders of Sem 1 2022-2023 have only one excel file.
->Check the excel file to make sure that the format is being followed as the example file.
+> Clone the repo
+> Use pip to install the packages given in requirements.txt. 
+> Keep the format of the files as provided examples in the repository.
+> Be sure to delete all the files in the Pickles folder(if any) when deploying for a new semester.
+> Be sure in a Department folder of the previous sem/year, there should be only one folder before deploying for instance, for academic year 2023-2024 Sem 1, make sure that all the department folders of Sem 1 2022-2023 have only one excel file.
+> Check the excel file to make sure that the format is being followed as the example file.
 
 # Running the Application
 > The credentials for each HOD are already created and cannot be changed.
