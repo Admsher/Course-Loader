@@ -10,12 +10,12 @@ A web application for AUGSD to provide a platform for the head of department to 
 1. Check the excel file to make sure that the format is being followed as the example file.
 
 # Running the Application
-1. The credentials for each HOD are already created and cannot be changed.
-1.The submissions by the HOD's by creating a new file on the application will be directly stored in the respective semesters department folder for the respective academic year.
-1.HODs' are given three chances to submit new iterations of his course load.
-1.Three files at max will be created in the folder with two having suffixes Old_2 (Oldest), Old_1 (Older). These are the files that are not to be used as course load and should be 'Cut' and 'Paste' in a different data folder.
-1.If the HOD wants to submit another file despite the three tries, just delete the oldest file in the folder.
-1.If the HOD submits an excel file directly from his device, it will be stored in media folder,make sure to check if the excel has the proper format as the example files in the repo,if so move the file in the folder for the respective semester in the respective year manually.
+- The credentials for each HOD are already created and cannot be changed.
+-The submissions by the HOD's by creating a new file on the application will be directly stored in the respective semesters department folder for the respective academic year.
+-HODs' are given three chances to submit new iterations of his course load.
+-Three files at max will be created in the folder with two having suffixes Old_2 (Oldest), Old_1 (Older). These are the files that are not to be used as course load and should be 'Cut' and 'Paste' in a different data folder.
+-If the HOD wants to submit another file despite the three tries, just delete the oldest file in the folder.
+-If the HOD submits an excel file directly from his device, it will be stored in media folder,make sure to check if the excel has the proper format as the example files in the repo,if so move the file in the folder for the respective semester in the respective year manually.
 
 # Admin panel
 1.The admin panel can be accesed by using the url "Application url"+/admin.
