@@ -3,7 +3,7 @@ A web application for AUGSD to provide a platform for the head of department to 
 
 # Setting the application on server
 >Clone the repo
->Use pip to install the packages given in requirements.txt.
+>Use pip to install the packages given in requirements.txt. \n
 >Keep the format of the files as provided examples in the repository.
 >Be sure to delete all the files in the Pickles folder(if any) when deploying for a new semester.
 >Be sure in a Department folder of the previous sem/year, there should be only one folder before deploying for instance, for academic year 2023-2024 Sem 1, make sure that all the department folders of Sem 1 2022-2023 have only one excel file.
