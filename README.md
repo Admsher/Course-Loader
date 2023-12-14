@@ -18,9 +18,9 @@ A web application for AUGSD to provide a platform for the head of department to 
 +If the HOD submits an excel file directly from his device, it will be stored in media folder,make sure to check if the excel has the proper format as the example files in the repo,if so move the file in the folder for the respective semester in the respective year manually.
 
  # Admin panel
-*The admin panel can be accesed by using the url "Application url"+/admin.
-*Access vy the admin credentials only.
-*The admin panel has different tabs for different types of courses which are CDC_HD,CDC_FD,Elective_HD,Elective_FD.
-*To add a course , mention the CDC_ID eg: "CS F111" in respective box, Course name in respective box and  choose the deartment of the course, make sure to press the "Save" button.
-*To add a faculty, go to the Faculty list tab and add the faculty by giving their required data.
-*"Department description" tab  is mostly self defined except the "Previous Record" box where you can add the url of the drive of the previous records kept in. 
+* The admin panel can be accesed by using the url "Application url"+/admin.
+* Access vy the admin credentials only.
+* The admin panel has different tabs for different types of courses which are CDC_HD,CDC_FD,Elective_HD,Elective_FD.
+* To add a course , mention the CDC_ID eg: "CS F111" in respective box, Course name in respective box and  choose the deartment of the course, make sure to press the "Save" button.
+* To add a faculty, go to the Faculty list tab and add the faculty by giving their required data.
+* "Department description" tab  is mostly self defined except the "Previous Record" box where you can add the url of the drive of the previous records kept in. 
