@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import datetime
 
         
 class CDC_FD(models.Model):
@@ -57,10 +57,14 @@ class Faculty_List(models.Model):
 
 
 class department_description(models.Model):
+     AY=()
+     for i in range(0,10):
+          AY=AY+((str(int(datetime.date.today().year)-1-int(i))+"-"+str(int(datetime.date.today().year)-int(i)),str(int(datetime.date.today().year)-1-int(i))+"-"+str(int(datetime.date.today().year)-int(i))),)
      Department_HOD=models.OneToOneField(User,on_delete=models.CASCADE)
      Department_Choice=(("CHE",'Chemical'),("MECH","Mechanical"),("EEE-INSTR","Electrical"),("Computer Science","Computer Science"),("PHY","Physics"),("BIO","Biology"),("CHEM","Chemistry"),("MATHS","Mathematics"),('ECON & MGMT',"Economics"),("HUM","Humanities"))
      Department_name=models.CharField('Department name',choices=Department_Choice,max_length=50)
      Upcoming_Sem=models.CharField('Upcoming Semester',choices=(('Sem 1','Sem 1'),('Sem 2','Sem 2')),max_length=50,null=True)
+     Academic_year=models.CharField('Academic Year',choices=AY,max_length=50,null=True)
      Previous_records=models.CharField('Link for the previous data',max_length=400,null=True,blank=True)
      Lock=models.BooleanField('Lock Website',default=False)
    

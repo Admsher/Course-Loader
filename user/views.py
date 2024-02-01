@@ -200,10 +200,10 @@ def previewForm(request):
            localStorage.setItem('cdc_id',cdc_id)
           
     current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
-    academic_year_folder=str(str(datetime.date.today().year-1)+"-"+str(int(datetime.date.today().year)))
+    academic_year_folder=str(department_description.objects.get(Department_HOD=request.user).Academic_year)
     Department_name = department_description.objects.get(Department_HOD=request.user)
-    path=str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name)
-    
+    path=str(str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name))
+    # path="2023-2024/Sem 2/Computer Science"
     for filename in os.listdir(path):
         if filename.endswith('xlsx'): 
             filepath=os.path.join(path, filename)
