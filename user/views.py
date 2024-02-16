@@ -359,8 +359,9 @@ def form_faculty_lec(request):
        
         if form_lec.is_valid(): 
             try:
-             for forms in form_lec:
-                 Lec_Faculty.append(forms.cleaned_data['Faculty'])
+             for form in form_lec:
+                faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                Lec_Faculty.append(faculty_names)
             except KeyError:
                 return HttpResponseRedirect('form_Faculty_Lec') 
            
@@ -369,6 +370,11 @@ def form_faculty_lec(request):
             
 
  return render(request, 'homepage/facultyForm_Lec.html', {'Lectureformset': Lectureformset})
+
+
+
+
+
 
 def form_faculty_tut(request):
         
@@ -384,8 +390,9 @@ def form_faculty_tut(request):
 
             if form_tut.is_valid():
                 try:
-                 for forms in form_tut:
-                     Tut_Faculty.append(forms.cleaned_data['Faculty'])
+                 for form in form_tut:
+                     faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                     Tut_Faculty.append(faculty_names)
                 except KeyError:
                     return HttpResponseRedirect('form_Faculty_Tut') 
 
@@ -410,8 +417,9 @@ def form_faculty_lab(request):
             submitted=True
             if form_lab.is_valid():
                 try:
-                    for forms in form_lab:
-                        Lab_Faculty.append(forms.cleaned_data['Faculty'])
+                    for form in form_lab:
+                        faculty_names = ','.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                        Lab_Faculty.append(faculty_names)
                 except KeyError:
                     return HttpResponseRedirect('form_Faculty_Lab') 
                 try:

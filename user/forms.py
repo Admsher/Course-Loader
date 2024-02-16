@@ -2,6 +2,7 @@ from django import forms
 
 from manager.models import Faculty_List
 
+
 from manager.models import department_description
 from manager.models import Elective_HD
 from manager.models import Elective_FD
@@ -21,22 +22,37 @@ def classformuser(user):
         
 
 def facultyform1user(user):
-        Department_name = department_description.objects.get(Department_HOD=user)
-        class facultyform1(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
-                
-        return facultyform1
+    DEMO_CHOICES =( 
+    ("1", "Naveen"), 
+    ("2", "Pranav"), 
+    ("3", "Isha"), 
+    ("4", "Saloni"), 
+) 
+    department_instance = department_description.objects.get(Department_HOD=user)
+    department_name = department_instance.Department_name
+
+    faculties = Faculty_List.objects.filter(Department=department_name)
+
+    class facultyform1(forms.Form):
+        Faculty = forms.ModelMultipleChoiceField(
+            queryset=Faculty_List.objects.filter(Department=department_name),
+            required=True
+        )
+    
+    return facultyform1
+
+
 
 def facultyform3user(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class facultyform3(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
+                Faculty = forms.ModelMultipleChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
         return facultyform3
 
 def facultyform2user(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class facultyform2(forms.Form):
-                Faculty = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
+                Faculty = forms.ModelMultipleChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
         return facultyform2
 
 
