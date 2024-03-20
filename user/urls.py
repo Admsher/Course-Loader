@@ -14,6 +14,7 @@ urlpatterns = [
     path('choose_new_table',views.choose_new_table,name='choose_new_table'),
     path('CDC_FD_list',views.CDC_FD_list,name='CDC_FD_list'),
     path('CDC_HD_list',views.CDC_HD_list,name='CDC_HD_list'),
+    path('WILP_list',views.WILP_list,name='WILP_list'),
     path('Elective_FD_list',views.Elective_FD_list,name='Elective_FD_list'),
     path('Elective_HD_list',views.Elective_HD_list,name='Elective_HD_list'),
     path(r'form_Faculty_Lec',views.form_faculty_lec,name='form_Faculty_Lec'),

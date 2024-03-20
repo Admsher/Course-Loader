@@ -1,8 +1,8 @@
 from django import forms
 
 from manager.models import Faculty_List
-
-
+from itertools import chain
+from manager.models import PHD_List
 from manager.models import department_description
 from manager.models import Elective_HD
 from manager.models import Elective_FD
@@ -34,25 +34,39 @@ def facultyform1user(user):
     faculties = Faculty_List.objects.filter(Department=department_name)
 
     class facultyform1(forms.Form):
-        Faculty = forms.ModelMultipleChoiceField(
-            queryset=Faculty_List.objects.filter(Department=department_name),
-            required=True
-        )
+                faculty_queryset = Faculty_List.objects.filter(Department=department_name)
+                phd_queryset = PHD_List.objects.filter(Department=department_name)
+
+      
+
+                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
     
     return facultyform1
 
 
 
 def facultyform3user(user):
-        Department_name = department_description.objects.get(Department_HOD=user)
+        department_name = department_description.objects.get(Department_HOD=user)
         class facultyform3(forms.Form):
-                Faculty = forms.ModelMultipleChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
+                faculty_queryset = Faculty_List.objects.filter(Department=department_name)
+                phd_queryset = PHD_List.objects.filter(Department=department_name)
+
+      
+                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
         return facultyform3
 
 def facultyform2user(user):
-        Department_name = department_description.objects.get(Department_HOD=user)
+        department_name = department_description.objects.get(Department_HOD=user)
         class facultyform2(forms.Form):
-                Faculty = forms.ModelMultipleChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),required=True)
+                faculty_queryset = Faculty_List.objects.filter(Department=department_name)
+                phd_queryset = PHD_List.objects.filter(Department=department_name)
+
+               
+
+                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
         return facultyform2
 
 

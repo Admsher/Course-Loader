@@ -1,17 +1,9 @@
-
-<!-- This form is common for both electives and CDC -->
 {%extends 'base.html' %}
 
-
 {% block content %}
+
+<html>
 {%include 'homepage/navbar.html' %}
-
-{%if submitted %}
-You have already submitted the form.Please let the administrator know if this is a mistake.
-
-{%else %}
-
-{% endif %}
 
 <head>
     <style>
@@ -48,13 +40,38 @@ You have already submitted the form.Please let the administrator know if this is
             background-color: #555555;
         }
 
+        .button4 .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .button-green {
+            border-radius: 5px;
+            background-color: green;
+        }
+
+        .button-green .indicator {
+            background-color: green;
+        }
+
+        .button-red {
+            border-radius: 5px;
+            background-color: red;
+        }
+
+        .button-red .indicator {
+            background-color: red;
+        }
+
         /* Black */
     </style>
     <style>
         table {
             font-family: arial, sans-serif;
             border-collapse: collapse;
-
             width: 100%;
         }
 
@@ -69,45 +86,27 @@ You have already submitted the form.Please let the administrator know if this is
             background-color: #dddddd;
         }
     </style>
-
-
 </head>
 
-<br /> <br /> <br /> <br />
+<br /> <br /> <br />
+<table>
+    {% for wilp_name in WILP_List %}
 
+    <tr>
 
-
-
-<form action="" method=POST>
-    {% csrf_token %}
-    <table>
-        <tr>
+        <td>
             <center>
 
-                <center>
-                    <b>Lab</b>
-                </center>
-        </tr>
-        <br><br>
-        <tr>
-            <center>
+                <a href="{% url 'previewForm'%}?data={{cdc_name}}" value="{{cdc_name}}"
+                    class="button button4{% if wilp_name in match_list %} button-green{% else %} button-red{% endif %}"> {{wilp_name}}  <span class="indicator"></span> </a>
 
-                {{Labformset.as_p}}
-                
+
             </center>
-        </tr>
-        <br><br>
-        
+        </td>
 
-    <center>
-        <input type="submit" value="Submit" class="button">
-        <input type="reset" value="Clear" class="button3">
-    </center>
+    </tr>
+    {%endfor%}
+</table>
 
-</form>
-
-
-
-
-
+</html>
 {% endblock %}

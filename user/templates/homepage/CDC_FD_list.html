@@ -39,6 +39,32 @@
         .button5 {
             background-color: #555555;
         }
+        
+.button4 .indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.button-green {
+    border-radius: 5px;
+    background-color: green;
+}
+
+.button-green .indicator {
+    background-color: green;
+}
+
+.button-red {
+    border-radius: 5px;
+    background-color: red;
+}
+
+.button-red .indicator {
+    background-color: red;
+}
 
         /* Black */
     </style>
@@ -72,7 +98,7 @@
             <center>
 
                 <a href="{% url 'previewForm'%}?data={{cdc_name}}" value="{{cdc_name}}"
-                    class="button button4">{{cdc_name}} </a>
+                    class="button button4{% if cdc_name in match_list %} button-green{% else %} button-red{% endif %}"> {{cdc_name}}  <span class="indicator"></span> </a>
 
 
             </center>

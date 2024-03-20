@@ -7,6 +7,8 @@ from . models import department_description
 from .models import CDC_HD
 from .models import Elective_FD
 from .models import Elective_HD
+from .models import PHD_List
+from .models import WILP
 
 
 
@@ -31,9 +33,7 @@ class UserAdmin(admin.ModelAdmin):
     
     
     
-   
 
-    
 
  
 
@@ -52,11 +52,13 @@ admin.site.unregister(User)
 admin.site.register(User,UserAdmin)
 admin.site.register(CDC_FD)
 admin.site.register(CDC_HD)
+admin.site.register(PHD_List)
 admin.site.register(Faculty_List)
 admin.site.register(department_description)
 admin.site.register(anouncement)
 admin.site.register(Elective_HD)
 admin.site.register(Elective_FD)
+admin.site.register(WILP)
 
 # admin.site.register(classform)
 

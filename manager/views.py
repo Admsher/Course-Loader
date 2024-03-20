@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 import datetime
 from django.http import HttpResponseRedirect
+from .utils import append_excel_data_to_model
 
 # Create your views here.
 def base(request):
@@ -30,3 +31,6 @@ def login_user(request):
 
     else:
         return render(request,'authentication/login.html',{})    
+    
+
+

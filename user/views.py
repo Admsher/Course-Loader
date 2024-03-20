@@ -10,6 +10,7 @@ from manager.models import CDC_FD
 from manager.models import CDC_HD
 from manager.models import Elective_FD
 from manager.models import Elective_HD
+from manager.models import WILP
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from .forms import classformuser
@@ -29,6 +30,7 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 from localStoragePy import localStoragePy
 from django.forms.models import model_to_dict
+from django.db.models import Q
 
 
 def logout_user(request):
@@ -152,11 +154,13 @@ def choose_new_table(request):
             file=load_workbook("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
             sheet=file.get_sheet_by_name(str(Department_name))
             sheet["J2"]=form.cleaned_data["Sidenote"]
-            file_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+".xlsx")
+            file_path=Path(path+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+".xlsx")
+           
             if file_path.exists():
+               
                 file_old=load_workbook(file_path)
-                file_old_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+" Old_1"+".xlsx")
-                file_older_path=Path(path+"/Courses for Course Load Submission Sem "+str(current_sem)+" "+str(Department_name)+" Old_2"+".xlsx")
+                file_old_path=Path(path+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+" Old_1"+".xlsx")
+                file_older_path=Path(path+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+" Old_2"+".xlsx")
                 if file_old_path.exists():
                     file_older=load_workbook(file_old_path)
                     file_older.save(file_older_path)
@@ -174,22 +178,69 @@ def choose_new_table(request):
 def CDC_FD_list(request):
     try:
         Department_name = department_description.objects.get(Department_HOD=request.user)
+        Semester=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     except TypeError:
         return HttpResponseRedirect('login_user')
-    CDC_department = (CDC_FD.objects.filter(CDC_Department=Department_name))
-    return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department})
+
+    CDC_department = CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester))
+    
+    try:
+        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+           
+            cdc_department = pickle.load(f)
+    except FileNotFoundError:
+        cdc_department = []
+    
+    # Filter CDC_FD objects based on cdc_department entries
+    matched_CDC_department = []
+    for cdc_title in cdc_department:
+        matched_CDC_department.extend(CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester) & Q(CDC_name=cdc_title)))
+   
+    return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department,"match_list":matched_CDC_department})
 
 def CDC_HD_list(request):
     try:
         Department_name = department_description.objects.get(Department_HOD=request.user)
+        Semester=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     except TypeError:
         return HttpResponseRedirect('login_user')
-    CDC_department = (CDC_HD.objects.filter(CDC_HD_Department=Department_name))
-
+    CDC_department = (CDC_HD.objects.filter(Q(CDC_HD_Department=Department_name) & Q(Upcoming_Sem_HD=Semester)))
+    try:
+        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+            
+            cdc_department = pickle.load(f)
+    except FileNotFoundError:
+        cdc_department = []
    
-    return render(request, 'homepage/CDC_HD_list.html', {"CDC_List": CDC_department})
 
+    # Filter CDC_FD objects based on cdc_department entries
+    matched_CDC_department = []
+    for cdc_title in cdc_department:
+        matched_CDC_department.extend(CDC_HD.objects.filter(Q(CDC_HD_Department=Department_name) & Q(Upcoming_Sem_HD=Semester) & Q(CDC_HD_name=cdc_title)))
+   
+   
+    return render(request, 'homepage/CDC_HD_list.html', {"CDC_List": CDC_department,"match_list":matched_CDC_department})
 
+def WILP_list(request):
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+        
+    except TypeError:
+        return HttpResponseRedirect('login_user')
+    WILP_department = (WILP.objects.filter(Q(WILP_Department=Department_name) ))
+    try:
+        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+           
+            cdc_department = pickle.load(f)
+    except FileNotFoundError:
+        cdc_department = []
+    
+    # Filter CDC_FD objects based on cdc_department entries
+    matched_CDC_department = []
+    for cdc_title in cdc_department:
+        matched_CDC_department.extend(WILP.objects.filter(Q(WILP_Department=Department_name)  & Q(WILP_name=cdc_title)))
+   
+    return render(request, 'homepage/CDC_HD_list.html', {"WILP_List": WILP_department,"match_list":matched_CDC_department})
 def previewForm(request):
     global cdc_id
 
@@ -355,13 +406,18 @@ def form_faculty_lec(request):
 
     
  if request.method=="POST":
+        
+
+
         form_lec=Lectureformset(request.POST or None)
        
         if form_lec.is_valid(): 
             try:
              for form in form_lec:
                 faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                Lec_Faculty.append(faculty_names)
+                phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                overall_names=faculty_names+'/'+phd_names
+                Lec_Faculty.append(overall_names)
             except KeyError:
                 return HttpResponseRedirect('form_Faculty_Lec') 
            
@@ -386,13 +442,18 @@ def form_faculty_tut(request):
         Tutformset=formset_factory(facultyform2,extra=Tutorial_number)
     
         if request.method=="POST":
+            tag=request.POST.get('clear')
+            if tag=='clear':
+                return HttpResponseRedirect('form_Faculty_Tut')
             form_tut=Tutformset(request.POST or None)
 
             if form_tut.is_valid():
                 try:
                  for form in form_tut:
                      faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                     Tut_Faculty.append(faculty_names)
+                     phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                     overall_names=faculty_names+'/'+phd_names
+                     Tut_Faculty.append(overall_names)
                 except KeyError:
                     return HttpResponseRedirect('form_Faculty_Tut') 
 
@@ -405,6 +466,7 @@ def form_faculty_lab(request):
       
          submitted=False
          Lab_Faculty=[]
+         Department_name = department_description.objects.get(Department_HOD=request.user)
          
          facultyform3=facultyform3user(user=request.user)
          try:
@@ -413,13 +475,36 @@ def form_faculty_lab(request):
              localStorage.getItem('Lab_number') 
              Labformset=formset_factory(facultyform3,extra=Lab_number)
          if request.method=="POST":
+            tag=request.POST.get('clear')
+     
+            if tag=='clear':
+                return HttpResponseRedirect('form_Faculty_Lab') 
             form_lab=Labformset(request.POST or None)
             submitted=True
             if form_lab.is_valid():
                 try:
                     for form in form_lab:
                         faculty_names = ','.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                        Lab_Faculty.append(faculty_names)
+                        phd_names= ','.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                    
+                        overall_names=faculty_names+','+phd_names
+                        Lab_Faculty.append(overall_names)
+                    
+
+            # Save updated course_titles list to pickle file
+                    if os.path.exists('Pickles/course_titles'+str(Department_name)+'.pickle'):
+                     # Load existing course_titles from the pickle file
+                        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+                            course_titles = pickle.load(f)
+                    else:
+                     # If the pickle file doesn't exist, create an empty list
+                        course_titles = []
+                    
+                    course_titles.append(cdc_title)
+                 
+                    with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'wb') as f:
+                        pickle.dump(course_titles, f)      
+                        
                 except KeyError:
                     return HttpResponseRedirect('form_Faculty_Lab') 
                 try:
@@ -560,16 +645,28 @@ def Elective_FD_list(request):
             open("Pickles/"+str(Department_name)+'_FD.pkl','a')
             with open("Pickles/"+str(Department_name)+'_FD.pkl', 'rb') as f:
                 data = pickle.load(f)
-        data_dict=model_to_dict(data)
+        
         Elective_list= data
-        form=form_Elective(initial=data_dict)
-        f.close()
 
+        f.close()
+        print(Elective_list)
+    
         
     except EOFError:
         Elective_list=[]
         form=form_Elective()
-
+    try:
+        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+            
+            cdc_department = pickle.load(f)
+    except FileNotFoundError:
+        cdc_department = []
+    matched_El_department = []
+    for cdc_title in cdc_department:
+        matched_El_department.extend(Elective_FD.objects.filter(Q(Elective_Department=Department_name)  & Q(Elective_name=cdc_title)))
+    
+    form=form_Elective()
+    f.close()
    
     if request.method=="POST":
         form=form_Elective(request.POST or None)
@@ -582,7 +679,7 @@ def Elective_FD_list(request):
                     open("Pickles/"+str(Department_name)+'_FD.pkl','a')
                     f=open("Pickles/"+str(Department_name)+'_FD.pkl','wb')
             (pickle.dump(Elective_list,f))        
-    return render(request,"homepage/Elective_FD_list.html",{"form":form,"elective_list":Elective_list})
+    return render(request,"homepage/Elective_FD_list.html",{"form":form,"elective_list":Elective_list,"match_list":matched_El_department})
 
 
 def Elective_HD_list(request):
@@ -603,12 +700,22 @@ def Elective_HD_list(request):
     
     
     Elective_list= data
-    form=form_Elective()
-    f.close()
+    
    except EOFError:
         Elective_list=[]
         form=form_Elective()
-
+   try:
+        with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
+            
+            cdc_department = pickle.load(f)
+   except FileNotFoundError:
+        cdc_department = []
+   matched_El_department = []
+   for cdc_title in cdc_department:
+        matched_El_department.extend(Elective_HD.objects.filter(Q(Elective_HD_Department=Department_name)  & Q(Elective_HD_name=cdc_title)))
+        form=form_Elective()
+        f.close()
+   
    if request.method=="POST":
         form=form_Elective(request.POST or None)
         
@@ -626,6 +733,6 @@ def Elective_HD_list(request):
 
                 (pickle.dump(Elective_list,f))
   
-   return render(request,"homepage/Elective_HD_list.html",{"form":form,"elective_list":Elective_list})
+   return render(request,"homepage/Elective_HD_list.html",{"form":form,"elective_list":Elective_list,"match_list":matched_El_department})
 
 
