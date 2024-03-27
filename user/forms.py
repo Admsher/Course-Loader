@@ -1,5 +1,5 @@
 from django import forms
-
+from django.db.models import Q
 from manager.models import Faculty_List
 from itertools import chain
 from manager.models import PHD_List
@@ -7,27 +7,33 @@ from manager.models import department_description
 from manager.models import Elective_HD
 from manager.models import Elective_FD
 
+class CustomModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def __init__(self, queryset, *args, **kwargs):
+        super().__init__(queryset, *args, **kwargs)
+        self.widget.attrs['class'] = 'searchable-select'  # Add a class to the widget for styling purposes
+
+    def clean(self, value):
+        cleaned_data = super().clean(value)
+        # Perform custom validation or cleaning logic here if needed
+        return cleaned_data
 
 
 
-def classformuser(user):
+
+
+def classformuser(user,initial_val):
         Department_name = department_description.objects.get(Department_HOD=user)
         class classForm(forms.Form):
-                FIC = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),label="Faculty In Charge")
-                Tutorials = forms.IntegerField()   
-                Lectures = forms.IntegerField()  
-                Labs= forms.IntegerField()  
+                FIC = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),label="Instructor In Charge",)
+                Tutorials = forms.IntegerField(initial=initial_val['Tutorial'])   
+                Lectures = forms.IntegerField(initial=initial_val['Lectures'])  
+                Labs= forms.IntegerField(initial=initial_val['Labs'])  
         return classForm
   
         
 
 def facultyform1user(user):
-    DEMO_CHOICES =( 
-    ("1", "Naveen"), 
-    ("2", "Pranav"), 
-    ("3", "Isha"), 
-    ("4", "Saloni"), 
-) 
+  
     department_instance = department_description.objects.get(Department_HOD=user)
     department_name = department_instance.Department_name
 
@@ -39,7 +45,7 @@ def facultyform1user(user):
 
       
 
-                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                Faculty = CustomModelMultipleChoiceField(queryset=faculty_queryset, required=True)
                 PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
     
     return facultyform1
@@ -53,19 +59,20 @@ def facultyform3user(user):
                 phd_queryset = PHD_List.objects.filter(Department=department_name)
 
       
-                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                Faculty = CustomModelMultipleChoiceField(queryset=faculty_queryset, required=True)
                 PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
         return facultyform3
 
 def facultyform2user(user):
         department_name = department_description.objects.get(Department_HOD=user)
         class facultyform2(forms.Form):
+                        
                 faculty_queryset = Faculty_List.objects.filter(Department=department_name)
                 phd_queryset = PHD_List.objects.filter(Department=department_name)
 
                
 
-                Faculty = forms.ModelMultipleChoiceField(queryset=faculty_queryset, required=True)
+                Faculty = CustomModelMultipleChoiceField(queryset=faculty_queryset, required=True)
                 PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
         return facultyform2
 

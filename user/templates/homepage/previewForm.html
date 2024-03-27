@@ -33,7 +33,7 @@
 
     /* Gray */
     .button5 {
-        background-color: #555555;
+        background-color: #f09604;
     }
 
     /* Black */
@@ -130,7 +130,7 @@
     </center>
     <br><br>
     <center>
-        Do you want keep the same order
+        Do you want keep it same: 
     </center>
     <center>
         <form action="" method="post">
@@ -140,7 +140,8 @@
          </a>
         </form>
         <!-- <a href="javascript:history.back()"   ><input type="button" value="Yes" /></a> -->
-        <a href="{%url 'form_CDC'%}?data={{CDC_name}}" name="{{CDC_name}}" class="button button3">No</a>
+        <a href="{%url 'form_CDC'%}?data={{CDC_name}}&label=No" name="{{CDC_name}}" class="button button3">No</a>
+        <a href="{%url 'form_CDC'%}?data={{CDC_name}}&label=Modify" name="{{CDC_name}}" class="button button5">Modify</a>
     </center>
 
 

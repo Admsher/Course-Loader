@@ -11,6 +11,7 @@ from manager.models import CDC_HD
 from manager.models import Elective_FD
 from manager.models import Elective_HD
 from manager.models import WILP
+from manager.models import Faculty_List
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from .forms import classformuser
@@ -31,6 +32,29 @@ import os
 from localStoragePy import localStoragePy
 from django.forms.models import model_to_dict
 from django.db.models import Q
+
+
+
+
+class MyFormsetFactory:
+    def __init__(self, form, phd_initial=None, faculty_initial=None, extra=1):
+        self.formset_factory = formset_factory(form, extra=extra)
+        self.phd_initial = phd_initial
+        self.faculty_initial = faculty_initial
+
+    def __call__(self, *args, **kwargs):
+        formset = self.formset_factory(*args, **kwargs)
+        self._set_initial_data(formset)
+        return formset
+
+    def _set_initial_data(self, formset):
+        for index, form in enumerate(formset.forms):
+            if self.phd_initial:
+                form.fields['PHD'].initial = self.phd_initial[index] if index < len(self.phd_initial) else None
+            if self.faculty_initial:
+                form.fields['Faculty'].initial = self.faculty_initial[index] if index < len(self.faculty_initial) else None
+
+
 
 
 def logout_user(request):
@@ -179,10 +203,12 @@ def CDC_FD_list(request):
     try:
         Department_name = department_description.objects.get(Department_HOD=request.user)
         Semester=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
+       
     except TypeError:
         return HttpResponseRedirect('login_user')
-
+    CDC_name=[]
     CDC_department = CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester))
+    # CDC_name.extend( CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester)).get().CDC_name)
     
     try:
         with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
@@ -193,10 +219,11 @@ def CDC_FD_list(request):
     
     # Filter CDC_FD objects based on cdc_department entries
     matched_CDC_department = []
-    for cdc_title in cdc_department:
-        matched_CDC_department.extend(CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester) & Q(CDC_name=cdc_title)))
+
+    for course_title in cdc_department:
+        matched_CDC_department.extend(CDC_FD.objects.filter(Q(CDC_Department=Department_name) & Q(Upcoming_Sem_FD=Semester) & Q(CDC_name=course_title)))
    
-    return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department,"match_list":matched_CDC_department})
+    return render(request, 'homepage/CDC_FD_list.html', {"CDC_List": CDC_department,"match_list":matched_CDC_department,"CDC_name_list":CDC_name})
 
 def CDC_HD_list(request):
     try:
@@ -215,8 +242,8 @@ def CDC_HD_list(request):
 
     # Filter CDC_FD objects based on cdc_department entries
     matched_CDC_department = []
-    for cdc_title in cdc_department:
-        matched_CDC_department.extend(CDC_HD.objects.filter(Q(CDC_HD_Department=Department_name) & Q(Upcoming_Sem_HD=Semester) & Q(CDC_HD_name=cdc_title)))
+    for course_title in cdc_department:
+        matched_CDC_department.extend(CDC_HD.objects.filter(Q(CDC_HD_Department=Department_name) & Q(Upcoming_Sem_HD=Semester) & Q(CDC_HD_name=course_title)))
    
    
     return render(request, 'homepage/CDC_HD_list.html', {"CDC_List": CDC_department,"match_list":matched_CDC_department})
@@ -237,43 +264,53 @@ def WILP_list(request):
     
     # Filter CDC_FD objects based on cdc_department entries
     matched_CDC_department = []
-    for cdc_title in cdc_department:
-        matched_CDC_department.extend(WILP.objects.filter(Q(WILP_Department=Department_name)  & Q(WILP_name=cdc_title)))
+    for course_title in cdc_department:
+        matched_CDC_department.extend(WILP.objects.filter(Q(WILP_Department=Department_name)  & Q(WILP_name=course_title)))
    
     return render(request, 'homepage/CDC_HD_list.html', {"WILP_List": WILP_department,"match_list":matched_CDC_department})
 def previewForm(request):
-    global cdc_id
+    global course_id
 
 
     
     if request.method == 'GET':
-           cdc_id = request.GET.get('data')
-           localStorage.setItem('cdc_id',cdc_id)
+           course_id = request.GET.get('data')
+           localStorage.setItem('course_id',course_id)
           
     current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     academic_year_folder=str(department_description.objects.get(Department_HOD=request.user).Academic_year)
     Department_name = department_description.objects.get(Department_HOD=request.user)
+
     path=str(str(academic_year_folder)+"/"+current_sem+"/"+str(Department_name))
-    # path="2023-2024/Sem 2/Computer Science"
-    for filename in os.listdir(path):
-        if filename.endswith('xlsx'): 
-            filepath=os.path.join(path, filename)
+   
+    path1=('Pickles/Courses for Course Load Submission '+str(Department_name)+'.xlsx')
+
+    if Path(path1).exists():
+        database=pd.read_excel(path1,sheet_name=str(Department_name))
+      
+
+    else:
+        for filename in os.listdir(path):
+            if filename.endswith('xlsx'): 
+                filepath=os.path.join(path, filename)
        
-    try:
-        database=pd.read_excel(filepath,sheet_name=str(Department_name))
+        try:
+            database=pd.read_excel(filepath,sheet_name=str(Department_name))
         
        
     
-    except FileNotFoundError:
-        database=pd.read_excel("cache.xlsx")
+        except FileNotFoundError:
+            database=pd.read_excel("cache.xlsx")
 
     
     database=database.drop([0])
-    database=database.drop(database.columns[7],axis=1)
-    database=database.drop(database.columns[8],axis=1)
-    
     try:
-        row_number=database[database.eq(cdc_id).any(axis=1)].index.to_numpy()
+        database=database.drop(database.columns[7],axis=1)
+        database=database.drop(database.columns[8],axis=1)
+    except IndexError:
+        print()
+    try:
+        row_number=database[database.eq(course_id).any(axis=1)].index.to_numpy()
         row_count=0
         for i in range(row_number[0],len(database[database.columns[1]])-1):
             if database.iloc[i][0] is not np.nan:
@@ -322,32 +359,52 @@ def previewForm(request):
 
     
     try:
-        cdc_title=CDC_FD.objects.get(CDC_ID=cdc_id).CDC_name   
-        localStorage.setItem("cdc_title",cdc_title)
+        course_title=CDC_FD.objects.filter(CDC_ID=course_id).first().CDC_name  
+        print("FOund") 
+        localStorage.setItem("course_title",course_title)
     except ObjectDoesNotExist:
-        print()
-    try:
-        cdc_title=CDC_HD.objects.get(CDC_HD_ID=cdc_id).CDC_HD_name  
-        localStorage.setItem("cdc_title",cdc_title) 
-    except ObjectDoesNotExist:
-        print()
-    try:
-        cdc_title=Elective_HD.objects.get(Elective_HD_ID=cdc_id).Elective_HD_name
-        localStorage.setItem("cdc_title",cdc_title)   
-    except ObjectDoesNotExist:
-        print()
-    try:
-        cdc_title=Elective_FD.objects.get(Elective_ID=cdc_id).Elective_name
-        localStorage.setItem("cdc_title",cdc_title)   
-    except ObjectDoesNotExist:
-        print()
-   
+        print("Not Found")
+        try:
+            course_title=CDC_HD.objects.filter(CDC_HD_ID=course_id).first().CDC_HD_name  
+            localStorage.setItem("course_title",course_title) 
+        except ObjectDoesNotExist:
+            print("Not FOund")
+            try:
+                course_title=Elective_HD.objects.filter(Elective_HD_ID=course_id).first().Elective_HD_name
+                localStorage.setItem("course_title",course_title)   
+            except ObjectDoesNotExist:
+                print()
+                try:
+                    course_title=Elective_FD.objects.filter(Elective_ID=course_id).first().Elective_name
+                    localStorage.setItem("course_title",course_title)   
+                except ObjectDoesNotExist:
+                    print()
+    data = {
+    'FIC': FIC_preview,
+    'Number_of_Lectures': Number_of_Lectures,
+    'Number_of_Labs': Number_of_Labs,
+    'Number_of_Tutorials': Number_of_Tutorials,
+    'Lecture_Faculty': Lecture_Faculty,
+    'Labaratory_Faculty': Labarotary_Faculty,
+    'Tutorial_Faculty': Tutorial_Faculty
+    }
+
+
+    try:    
+                    f=open("Pickles/"+str(Department_name)+'_form.pkl','wb')
+    except FileNotFoundError:
+                    open("Pickles/"+str(Department_name)+'_form.pkl','a')
+                    f=open("Pickles/"+str(Department_name)+'_form.pkl','wb')
+
+
+    (pickle.dump(data,f))
+
         
     if request.method=="POST":
         
         create_file(request=request,FIC_name=FIC_preview,Lecture=Number_of_Lectures,Lab=Number_of_Labs,Tutorial=Number_of_Tutorials,Faculty_Lec=Lecture_Faculty,Faculty_Tut=Tutorial_Faculty,Faculty_Lab=Labarotary_Faculty)
         return  HttpResponseRedirect('choose_new_table')
-    return render(request,'homepage/previewForm.html',{'Lectures':Number_of_Lectures,'Tutorial':Number_of_Tutorials,'Labs':Number_of_Labs,"CDC_name":cdc_title,"Lab_Faculty":Labarotary_Faculty,"Tut_Faculty":Tutorial_Faculty,"Lec_Faculty":Lecture_Faculty})
+    return render(request,'homepage/previewForm.html',{'Lectures':Number_of_Lectures,'Tutorial':Number_of_Tutorials,'Labs':Number_of_Labs,"CDC_name":course_title,"Lab_Faculty":Labarotary_Faculty,"Tut_Faculty":Tutorial_Faculty,"Lec_Faculty":Lecture_Faculty})
 
 
 
@@ -355,10 +412,30 @@ def previewForm(request):
 
 def form_CDC(request):
     global FIC
-    global cdc_title
+    global course_title
+    try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+    except TypeError:
+        return HttpResponseRedirect('login_user')
            
-    cdc_title = request.GET.get('data')
-    formclass=classformuser(user=request.user)
+    course_title = request.GET.get('data')
+    label=request.GET.get('label')
+    localStorage.setItem('label',label)
+    if label=='No':
+        formclass=classformuser(user=request.user,initial_val={'Lectures':0,'Tutorial':0,'Labs':0})
+    elif label=='Modify':
+        try:
+            with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                data = pickle.load(f)
+        except FileNotFoundError:
+            open("Pickles/"+str(Department_name)+'_form.pkl','a')
+            with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                data = pickle.load(f)   
+        formclass=classformuser(user=request.user,initial_val={'Lectures':int(data['Number_of_Lectures']),'Tutorial':int(data['Number_of_Tutorials']),'Labs':int(data['Number_of_Labs'])})
+   
+        
+        
+
    
     if request.method == 'POST':
         form = formclass(request.POST) 
@@ -382,11 +459,15 @@ def form_CDC(request):
          form = formclass()
     
 
-    return render(request, "homepage/form_CDC.html", context={'form': form,"cdc_name":cdc_title})
+    return render(request, "homepage/form_CDC.html", context={'form': form,"cdc_name":course_title})
 
 
 
 def form_faculty_lec(request):
+ try:
+        Department_name = department_description.objects.get(Department_HOD=request.user)
+ except TypeError:
+        return HttpResponseRedirect('login_user')
  
  global Lab_number
  global Lecture_Number
@@ -399,14 +480,29 @@ def form_faculty_lec(request):
  localStorage.setItem('Lab_number',Lab_number)
  localStorage.setItem('Tutorial_number',Tutorial_number)
  localStorage.setItem('Lecture_number',Lecture_Number)
+ label=localStorage.getItem('label')
+ if label == 'No':
+    facultyform1=facultyform1user(user=request.user)
+    Lectureformset=formset_factory(facultyform1,extra=Lecture_Number)
+ elif label=='Modify':
+      try:
+            with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                data = pickle.load(f)
+      except FileNotFoundError:
+            open("Pickles/"+str(Department_name)+'_form.pkl','a')
+            with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                data = pickle.load(f)
+      facultyform1=facultyform1user(user=request.user)
+      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=data['Lecture_Faculty'],faculty_initial=data['Lecture_Faculty'],extra=Lecture_Number)
 
- facultyform1=facultyform1user(user=request.user)
- Lectureformset=formset_factory(facultyform1,extra=Lecture_Number)
+ 
+
 
 
     
  if request.method=="POST":
-        
+       
+ 
 
 
         form_lec=Lectureformset(request.POST or None)
@@ -433,13 +529,31 @@ def form_faculty_lec(request):
 
 
 def form_faculty_tut(request):
+        try:
+            Department_name = department_description.objects.get(Department_HOD=request.user)
+        except TypeError:
+            return HttpResponseRedirect('login_user')
         
         global Tut_Faculty
         Tut_Faculty=[]
         
-        facultyform2=facultyform2user(user=request.user)
+       
         
-        Tutformset=formset_factory(facultyform2,extra=Tutorial_number)
+        label=localStorage.getItem('label')
+        if label == 'No':
+            facultyform2=facultyform2user(user=request.user)
+            Tutformset=formset_factory(facultyform2,extra=Lecture_Number)
+        elif label=='Modify':
+            try:
+                with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                    data = pickle.load(f)
+            except FileNotFoundError:
+                    open("Pickles/"+str(Department_name)+'_form.pkl','a')
+                    with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                        data = pickle.load(f)
+            facultyform2=facultyform2user(user=request.user)
+            Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=data['Tutorial_Faculty'],extra=Tutorial_number)
+
     
         if request.method=="POST":
             tag=request.POST.get('clear')
@@ -463,17 +577,35 @@ def form_faculty_tut(request):
 
 
 def form_faculty_lab(request):  
+         try:
+            Department_name = department_description.objects.get(Department_HOD=request.user)
+         except TypeError:
+            return HttpResponseRedirect('login_user')
+        
       
          submitted=False
          Lab_Faculty=[]
          Department_name = department_description.objects.get(Department_HOD=request.user)
          
-         facultyform3=facultyform3user(user=request.user)
-         try:
-            Labformset=formset_factory(facultyform3,extra=Lab_number)
-         except NameError:
-             localStorage.getItem('Lab_number') 
-             Labformset=formset_factory(facultyform3,extra=Lab_number)
+         
+         label=localStorage.getItem('label')
+         if label == 'No':
+            facultyform3=facultyform3user(user=request.user)
+            Labformset=formset_factory(facultyform3,extra=Lecture_Number)
+         elif label=='Modify':
+            try:
+                with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                    data = pickle.load(f)
+            except FileNotFoundError:
+                    open("Pickles/"+str(Department_name)+'_form.pkl','a')
+                    with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
+                        data = pickle.load(f)
+            facultyform3=facultyform3user(user=request.user)
+            Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=data['Labaratory_Faculty'],extra=Lab_number)
+         
+         
+         
+         
          if request.method=="POST":
             tag=request.POST.get('clear')
      
@@ -500,7 +632,7 @@ def form_faculty_lab(request):
                      # If the pickle file doesn't exist, create an empty list
                         course_titles = []
                     
-                    course_titles.append(cdc_title)
+                    course_titles.append(course_title)
                  
                     with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'wb') as f:
                         pickle.dump(course_titles, f)      
@@ -522,10 +654,10 @@ def form_faculty_lab(request):
        
 def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Faculty_Tut):
     try:
-        print(cdc_id)
+        print()
     except NameError:
-        cdc_id=localStorage.getItem('cdc_id')
-    cdc_title=localStorage.getItem("cdc_title")
+        course_id=localStorage.getItem('course_id')
+    course_title=localStorage.getItem("course_title")
     Department_name = department_description.objects.get(Department_HOD=request.user)
    
 
@@ -541,7 +673,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
            column = 'A'
            row = i
            cell_value = sheet[f'{column}{row}'].value
-           if cell_value==cdc_id:
+           if cell_value==course_id:
             row_if_present=row
             break
        if row_if_present!="":
@@ -569,8 +701,8 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                 sheet.cell(row=last_row+i+1, column=4).value=i+1
                 sheet.cell(row=last_row+i+1, column=7).value=str(Faculty_Lec[i])
                 sheet.cell(row=last_row+1,column=6).value=str(FIC_name)
-                sheet.cell(row=last_row+1,column=1).value=str(cdc_id)
-                sheet.cell(row=last_row+1,column=2).value=str(cdc_title)
+                sheet.cell(row=last_row+1,column=1).value=str(course_id)
+                sheet.cell(row=last_row+1,column=2).value=str(course_title)
             except IndexError:
                     break
        for i in range(0,Tutorial):
@@ -608,8 +740,8 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
             Sheet.cell(row=4+i, column=4).value=i+1
             Sheet.cell(row=4+i, column=5).value="L"
             Sheet.cell(row=4+i, column=7).value=str(Faculty_Lec[i])
-            Sheet['A4']=str(cdc_id)       
-            Sheet['B4']=str(cdc_title) 
+            Sheet['A4']=str(course_id)       
+            Sheet['B4']=str(course_title) 
             Sheet["F4"]=str(FIC_name) 
         
         for i in range(0,Tutorial):
@@ -662,8 +794,8 @@ def Elective_FD_list(request):
     except FileNotFoundError:
         cdc_department = []
     matched_El_department = []
-    for cdc_title in cdc_department:
-        matched_El_department.extend(Elective_FD.objects.filter(Q(Elective_Department=Department_name)  & Q(Elective_name=cdc_title)))
+    for course_title in cdc_department:
+        matched_El_department.extend(Elective_FD.objects.filter(Q(Elective_Department=Department_name)  & Q(Elective_name=course_title)))
     
     form=form_Elective()
     f.close()
@@ -711,10 +843,10 @@ def Elective_HD_list(request):
    except FileNotFoundError:
         cdc_department = []
    matched_El_department = []
-   for cdc_title in cdc_department:
-        matched_El_department.extend(Elective_HD.objects.filter(Q(Elective_HD_Department=Department_name)  & Q(Elective_HD_name=cdc_title)))
-        form=form_Elective()
-        f.close()
+   for course_title in cdc_department:
+        matched_El_department.extend(Elective_HD.objects.filter(Q(Elective_HD_Department=Department_name)  & Q(Elective_HD_name=course_title)))
+   form=form_Elective()
+   f.close()
    
    if request.method=="POST":
         form=form_Elective(request.POST or None)

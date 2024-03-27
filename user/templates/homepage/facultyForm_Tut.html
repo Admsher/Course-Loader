@@ -1,4 +1,3 @@
-
 <!-- This form is common for both electives and CDC -->
 {%extends 'base.html' %}
 
@@ -88,25 +87,72 @@ You have already submitted the form.Please let the administrator know if this is
                     <b>Tutorial</b>
                 </center>
         </tr>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <br><br>
+
+        <center><input type="text" id="searchInput" placeholder="Search..."></center>
         <br><br>
         <tr>
             <center>
 
                 {{Tutformset.as_p}}
-                
+
             </center>
         </tr>
         <br><br>
-        
 
-    <center>
-        <input type="submit" value="Next" class="button">
-        <input type="reset" value="Clear" class="button3">
-    </center>
+
+        <center>
+            <input type="submit" value="Next" class="button">
+            <input type="reset" value="Clear" class="button3">
+        </center>
 
 </form>
 
+<script>
+    $(document).ready(function () {
+        $('#searchInput').on('change', function () {
+            var searchText = $(this).val().toUpperCase();
+            console.log('Search Text:', searchText);
 
+            // Count the number of select tags containing "form" in their name
+            var numSelects = $('select[name*="form"]').length;
+
+            for (var i = 0; i < numSelects; i++) {
+                var $select = $('select[name="form-' + i + '-Faculty"] ');
+                var $options = $select.find('option');
+                var $matchingOptions = $options.filter(function () {
+                    return $(this).text().toUpperCase().includes(searchText);
+                });
+
+                if ($matchingOptions.length > 0) {
+
+                    $matchingOptions.detach();
+
+
+                    $select.prepend($matchingOptions);
+                }
+            }
+            for (var i = 0; i < numSelects; i++) {
+                var $select = $('select[name="form-' + i + '-PHD"] ');
+                var $options = $select.find('option');
+                var $matchingOptions = $options.filter(function () {
+                    return $(this).text().toUpperCase().includes(searchText);
+                });
+
+                if ($matchingOptions.length > 0) {
+
+                    $matchingOptions.detach();
+
+
+                    $select.prepend($matchingOptions);
+                }
+            }
+        });
+    });
+
+
+</script>
 
 
 

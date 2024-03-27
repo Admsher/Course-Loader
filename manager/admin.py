@@ -1,64 +1,186 @@
 from django.contrib import admin
-from django.contrib.auth.models import Group,User
-from .models import CDC_FD
-from .models import Faculty_List
-from . models import anouncement
-from . models import department_description
-from .models import CDC_HD
-from .models import Elective_FD
-from .models import Elective_HD
-from .models import PHD_List
-from .models import WILP
-
-
-
-# Register your models here.
-admin.site.unregister(Group)
-class CDC_FD_names(admin.StackedInline):
-    model=CDC_FD
-
-class Department_Desc_Inline(admin.StackedInline):
-    model=department_description
-
-    inlines=[CDC_FD_names]
-
-class UserAdmin(admin.ModelAdmin):
-
-    model= User
-
-    fields=["username","password"]
-    
+from .models import CDC_FD, CDC_HD, Elective_FD, Elective_HD, WILP, anouncement, Faculty_List, PHD_List, department_description
+from django.core.exceptions import FieldError
+import os
+from django.conf import settings
+import subprocess
+class DepartmentFilter(admin.SimpleListFilter):
   
-    inlines=[Department_Desc_Inline]
+    title = 'Department'
     
-    
-    
+    parameter_name = 'department'
+
+    def lookups(self, request, model_admin):
+        try:
+            departments = set(model_admin.get_queryset(request).values_list('Department', flat=True))
+        except FieldError:
+            try:
+                departments = set(model_admin.get_queryset(request).values_list('CDC_Department', flat=True))
+            except FieldError:
+                try:
+                    departments = set(model_admin.get_queryset(request).values_list('CDC_HD_Department', flat=True))
+                except FieldError:
+                    try:
+                        departments = set(model_admin.get_queryset(request).values_list('Elective_HD_Department', flat=True))
+                    except FieldError:
+                        try:
+                            departments = set(model_admin.get_queryset(request).values_list('Elective_Department', flat=True))
+                        except FieldError:
+                                departments = set(model_admin.get_queryset(request).values_list('WILP_Department', flat=True))
+                
+                
+
+        return [(department, department) for department in departments]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            try:
+                return queryset.filter(CDC_Department=self.value())
+            except FieldError:
+                try:
+                    return queryset.filter(CDC_HD_Department=self.value())
+                except FieldError:
+                    try:
+                        return queryset.filter(Elective_Department=self.value())
+                    except FieldError:
+                        try:
+                            return queryset.filter(Elective_HD_Department=self.value())
+                        except FieldError:
+                            try:
+                                return queryset.filter(WILP_Department=self.value())
+                            except FieldError:
+                       
+                                return queryset.filter(Department=self.value())
+
+class CDC_FDAdmin(admin.ModelAdmin):
+    list_display = ['CDC_ID', 'CDC_name']
+    list_filter = (DepartmentFilter,)
+
+class CDC_HDAdmin(admin.ModelAdmin):
+    list_display = ['CDC_HD_ID', 'CDC_HD_name']
+    list_filter = (DepartmentFilter,)
+
+class Elective_FDAdmin(admin.ModelAdmin):
+    list_display = ['Elective_ID', 'Elective_name']
+    list_filter = (DepartmentFilter,)
+
+class Elective_HDAdmin(admin.ModelAdmin):
+    list_display = ['Elective_HD_ID', 'Elective_HD_name']
+    list_filter = (DepartmentFilter,)
+
+class WILPAdmin(admin.ModelAdmin):
+    list_display = ['WILP_ID', 'WILP_name']
+    list_filter = (DepartmentFilter,)
+
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ['title', 'description']
+   
+
+class Faculty_ListAdmin(admin.ModelAdmin):
+    list_display = ['first_name', 'ID_No']
+    list_filter = (DepartmentFilter,)
+
+class PHD_ListAdmin(admin.ModelAdmin):
+    list_display = ['first_name', 'PSM_No']
+    list_filter = (DepartmentFilter,)
+
+class Department_DescriptionAdmin(admin.ModelAdmin):
+    list_display = ['Department_name', 'Department_HOD']
+
+# Register models with respective admin classes
+admin.site.register(CDC_FD, CDC_FDAdmin)
+admin.site.register(CDC_HD, CDC_HDAdmin)
+admin.site.register(Elective_FD, Elective_FDAdmin)
+admin.site.register(Elective_HD, Elective_HDAdmin)
+admin.site.register(WILP, WILPAdmin)
+admin.site.register(anouncement, AnnouncementAdmin)
+admin.site.register(Faculty_List, Faculty_ListAdmin)
+admin.site.register(PHD_List, PHD_ListAdmin)
+admin.site.register(department_description, Department_DescriptionAdmin)
 
 
- 
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+
+class CustomUserAdmin(BaseUserAdmin):
+    add_fieldsets = (
+        (None, {
+            'fields': ('username', 'password1', 'password2'),
+        }),
+    )
+
+from .models import  Files,Cachefile
+class UploadAdmin(admin.ModelAdmin):
+    list_display = ['academic_year', 'semester', 'department', 'file']
+    actions=["delete"]
+    def save_model(self, request, obj, form, change):
+        
+        if obj.file and (not change or obj.file != obj._meta.get_field('file').get_default()):
+            if os.path.exists(obj.file.path):
+                os.remove(obj.file.path)
+            obj.file.save(obj.file.name, obj.file, save=False)
+
+        # Save the model instance
+        super().save_model(request, obj, form, change)
 
 
+    @admin.action(permissions=["delete_locally"] ,description="Delete file from server")
+    def delete(self, request, obj):
+        
+        # Delete the file associated with the model instance
+        for instance in obj:
+            file_path = str(settings.BASE_DIR)+str(instance)
+            print(file_path)
+            if os.path.exists(file_path):
+                print("exists")
+                os.remove(file_path)
+            else:
+                file_path=str(settings.BASE_DIR)+f"\{instance.academic_year}\{instance.semester}\{instance.department}\{instance}"
+                os.remove(file_path)
+        
+        # Delete the model instance
+        super().delete_model(request, obj)
+    delete.allowed_permissions=["delete"]
 
-class Faculties(admin.ModelAdmin):
-    model=Faculty_List
+class UploadAdmincache(admin.ModelAdmin):
+    list_display = ['file']
+    actions=["delete"]
+    def save_model(self, request, obj, form, change):
+        
+        if obj.file and (not change or obj.file != obj._meta.get_field('file').get_default()):
+            if os.path.exists(obj.file.path):
+                os.remove(obj.file.path)
+            obj.file.save(obj.file.name, obj.file, save=False)
+
+        # Save the model instance
+        super().save_model(request, obj, form, change)
 
 
+    @admin.action(permissions=["delete_locally"] ,description="Delete file from server")
+    def delete(self, request, obj):
+        
+        # Delete the file associated with the model instance
+        for instance in obj:
+            file_path = str(instance.file)
+         
+            print(instance.file)
+            if os.path.exists(file_path):
+
+                os.remove(file_path)
+      
+                
+                
+        
+        # Delete the model instance
+        super().delete_model(request, obj)
+    delete.allowed_permissions=["delete"]
+
+admin.site.register(Files, UploadAdmin)
+admin.site.register(Cachefile,UploadAdmincache)
 
 
 
 
 
 admin.site.unregister(User)
-admin.site.register(User,UserAdmin)
-admin.site.register(CDC_FD)
-admin.site.register(CDC_HD)
-admin.site.register(PHD_List)
-admin.site.register(Faculty_List)
-admin.site.register(department_description)
-admin.site.register(anouncement)
-admin.site.register(Elective_HD)
-admin.site.register(Elective_FD)
-admin.site.register(WILP)
-
-# admin.site.register(classform)
-
+admin.site.register(User, CustomUserAdmin)
