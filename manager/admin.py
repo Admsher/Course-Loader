@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CDC_FD, CDC_HD, Elective_FD, Elective_HD, WILP, anouncement, Faculty_List, PHD_List, department_description
+from .models import CDC_FD, CDC_HD, Elective_FD, Elective_HD, WILP, anouncement, Faculty_List, PHD_List, department_description,General
 from django.core.exceptions import FieldError
 import os
 from django.conf import settings
@@ -72,6 +72,10 @@ class WILPAdmin(admin.ModelAdmin):
     list_display = ['WILP_ID', 'WILP_name']
     list_filter = (DepartmentFilter,)
 
+class GeneralAdmin(admin.ModelAdmin):
+    list_display = ['General_ID', 'General_name']
+    list_filter = (DepartmentFilter,)
+
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ['title', 'description']
    
@@ -87,6 +91,9 @@ class PHD_ListAdmin(admin.ModelAdmin):
 class Department_DescriptionAdmin(admin.ModelAdmin):
     list_display = ['Department_name', 'Department_HOD']
 
+
+
+
 # Register models with respective admin classes
 admin.site.register(CDC_FD, CDC_FDAdmin)
 admin.site.register(CDC_HD, CDC_HDAdmin)
@@ -97,7 +104,7 @@ admin.site.register(anouncement, AnnouncementAdmin)
 admin.site.register(Faculty_List, Faculty_ListAdmin)
 admin.site.register(PHD_List, PHD_ListAdmin)
 admin.site.register(department_description, Department_DescriptionAdmin)
-
+admin.site.register(General)
 
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
@@ -107,6 +114,7 @@ class CustomUserAdmin(BaseUserAdmin):
         (None, {
             'fields': ('username', 'password1', 'password2'),
         }),
+        
     )
 
 from .models import  Files,Cachefile

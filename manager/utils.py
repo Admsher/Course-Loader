@@ -1,6 +1,6 @@
 import pandas as pd
 from .models import PHD_List, Faculty_List
-from .models import CDC_FD,CDC_HD,Elective_FD,Elective_HD,WILP
+from .models import CDC_FD,CDC_HD,Elective_FD,Elective_HD,WILP,General
 from django.contrib import admin
 import os
 
@@ -143,6 +143,19 @@ def append_excel_data_to_model_el(file_path,file_sheet):
                    
                 )
                 instance.save()
+            elif str(row["DISCIPLINE ELECTIVE"])=="GENERAL":
+                existing_General = General.objects.filter(General_name=row['COURSE TITLE']).exists()
+                if not existing_General:
+                   
+                    instance = General(
+                        General_ID=row['COURSE NO'],
+                        General_name=row['COURSE TITLE'],
+                       
+                   
+                )
+                instance.save()
+
+
             else:
                 existing_Elective_FD = Elective_FD.objects.filter(Elective_name=row['COURSE TITLE'], Elective_Department=row['DEPT']).exists()
                 if not existing_Elective_FD:

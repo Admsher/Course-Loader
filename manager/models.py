@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 import datetime
 import os
 import pandas as pd
+from django.db import models
+
 
 df = pd.read_excel("Departments.xlsx", sheet_name="Codes")
 class department_description(models.Model):
@@ -66,6 +68,15 @@ class WILP(models.Model):
         
         def __str__(self):
              return self.WILP_ID
+        
+class General(models.Model):
+        Department_Choice = [(code, name) for code, name in zip(df['Department Code'], df['Department name'])]
+        General_ID=models.CharField('General_ID',max_length=20)
+        General_name=models.CharField('General_name',max_length=50)
+       
+        
+        def __str__(self):
+             return self.General_ID
 
 
 
