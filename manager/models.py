@@ -128,7 +128,7 @@ class Files(models.Model):
     file = models.FileField(upload_to=dynamic_upload_path)
 
     def __str__(self):
-        return f"\{self.file}"
+        return f"{self.file}"
 
     def save(self, *args, **kwargs):
        

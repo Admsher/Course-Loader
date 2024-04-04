@@ -164,6 +164,7 @@ def choose_new_table(request):
         df=""
         message="Table not created yet."
         tablePresent=False
+        attempts_remaining=3-filecount
     
     if request.GET.get("elective_hd"):
             return Elective_HD_list(request=request)
@@ -297,17 +298,21 @@ def previewForm(request):
         try:
             database=pd.read_excel(filepath,sheet_name=str(Department_name))
         
-       
-    
-        except FileNotFoundError:
+        except UnboundLocalError:
+            database=pd.read_excel("cache.xlsx")
+            
+        except FileNotFoundError :
             database=pd.read_excel("cache.xlsx")
 
     
-    database=database.drop([0])
+   
     try:
+        database=database.drop([0])
         database=database.drop(database.columns[7],axis=1)
         database=database.drop(database.columns[8],axis=1)
     except IndexError:
+        print()
+    except KeyError:
         print()
     try:
         row_number=database[database.eq(course_id).any(axis=1)].index.to_numpy()
@@ -493,7 +498,8 @@ def form_faculty_lec(request):
             with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
                 data = pickle.load(f)
       facultyform1=facultyform1user(user=request.user)
-      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=data['Lecture_Faculty'],faculty_initial=data['Lecture_Faculty'],extra=Lecture_Number)
+      faculty_names = data['Lecture_Faculty']
+      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=data['Lecture_Faculty'],faculty_initial=faculty_names,extra=Lecture_Number)
 
  
 
@@ -552,7 +558,8 @@ def form_faculty_tut(request):
                     with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
                         data = pickle.load(f)
             facultyform2=facultyform2user(user=request.user)
-            Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=data['Tutorial_Faculty'],extra=Tutorial_number)
+            faculty_names = data['Tutorial_Faculty']
+            Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=faculty_names,extra=Tutorial_number)
 
     
         if request.method=="POST":
@@ -601,7 +608,8 @@ def form_faculty_lab(request):
                     with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
                         data = pickle.load(f)
             facultyform3=facultyform3user(user=request.user)
-            Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=data['Labaratory_Faculty'],extra=Lab_number)
+            faculty_names = data['Labaratory_Faculty']
+            Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=faculty_names,extra=Lab_number)
          
          
          
@@ -653,10 +661,8 @@ def form_faculty_lab(request):
 
        
 def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Faculty_Tut):
-    try:
-        print()
-    except NameError:
-        course_id=localStorage.getItem('course_id')
+   
+    course_id=localStorage.getItem('course_id')
     course_title=localStorage.getItem("course_title")
     Department_name = department_description.objects.get(Department_HOD=request.user)
    
@@ -721,6 +727,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
             sheet.cell(row=last_row+Lecture+Tutorial+i+1, column=7).value=str(Faculty_Lab[i])
          except IndexError:
                 break
+       print(file)
        file.save("Pickles/"+"Courses for Course Load Submission "+str(Department_name)+".xlsx")
 
     else:    
