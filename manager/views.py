@@ -66,7 +66,7 @@ def populate_files():
                 file_instance.academic_year = academic_year
                 file_instance.semester = semester
                 file_instance.department = department
-                file_instance.file = file_name
+                file_instance.file = f"{academic_year}/{semester}/{department}/{file_name}"
                 file_instance.save()
     files = os.listdir(cache_dir)
     for  file in files:

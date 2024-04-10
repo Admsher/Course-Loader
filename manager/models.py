@@ -4,6 +4,8 @@ import datetime
 import os
 import pandas as pd
 from django.db import models
+from django.conf import settings
+from django.utils.html import format_html
 
 
 df = pd.read_excel("Departments.xlsx", sheet_name="Codes")
@@ -30,6 +32,10 @@ class CDC_FD(models.Model):
         CDC_name=models.CharField('CDC_name',max_length=50)
         CDC_Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
         Upcoming_Sem_FD=models.CharField('Upcoming Semester',choices=(('Sem 1','Sem 1'),('Sem 2','Sem 2')),max_length=50,null=True)
+        class Meta:
+            verbose_name = "FD CDC"  
+            verbose_name_plural = "FD CDC"
+            ordering = ['CDC_name']
         def __str__(self):
              return self.CDC_ID
 
@@ -39,6 +45,10 @@ class CDC_HD(models.Model):
         CDC_HD_name=models.CharField('CDC_name',max_length=50)
         CDC_HD_Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
         Upcoming_Sem_HD=models.CharField('Upcoming Semester',choices=(('Sem 1','Sem 1'),('Sem 2','Sem 2')),max_length=50,null=True)
+        class Meta:
+            verbose_name = "HD CDC"  
+            verbose_name_plural = "HD CDC"
+            ordering = ['CDC_HD_name']
         def __str__(self):
              return self.CDC_HD_ID
         
@@ -47,7 +57,10 @@ class Elective_FD(models.Model):
         Elective_ID=models.CharField('Elective_ID',max_length=20)
         Elective_name=models.CharField('Elective_name',max_length=50)
         Elective_Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
-        
+        class Meta:
+            verbose_name = "FD Eectives"  # Singur name for the model
+            verbose_name_plural = "FD Electives"
+            ordering = ['Elective_name']
         def __str__(self):
              return self.Elective_ID
 
@@ -56,6 +69,10 @@ class Elective_HD(models.Model):
         Elective_HD_ID=models.CharField('Elective_ID',max_length=20)
         Elective_HD_name=models.CharField('Elective_name',max_length=50)
         Elective_HD_Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
+        class Meta:
+            verbose_name = "HD ELectives"  
+            verbose_name_plural = "HD Electives"
+            ordering = ['Elective_HD_name']
         
         def __str__(self):
              return self.Elective_HD_ID
@@ -65,7 +82,11 @@ class WILP(models.Model):
         WILP_ID=models.CharField('Elective_ID',max_length=20)
         WILP_name=models.CharField('Elective_name',max_length=50)
         WILP_Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
+        class Meta:
+            verbose_name = "WILP"  # Singur name for the model
+            verbose_name_plural = "WILP"
         
+            ordering = ['WILP_name']
         def __str__(self):
              return self.WILP_ID
         
@@ -93,7 +114,8 @@ class Faculty_List(models.Model):
      ID_No=models.CharField(max_length=50)
      Department_Choice = [(code, name) for code, name in zip(df['Department Code'], df['Department name'])]
      Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
-
+     class Meta:
+                     ordering = ['first_name']
 
      def __str__(self):
           return self.first_name
@@ -104,6 +126,8 @@ class PHD_List(models.Model):
      PSM_No=models.CharField(max_length=50)
      Department_Choice = [(code, name) for code, name in zip(df['Department Code'], df['Department name'])]
      Department=models.CharField('Department name',choices=Department_Choice,max_length=50)
+     class Meta:
+            ordering = ['first_name']
    
 
      def __str__(self):
@@ -123,10 +147,13 @@ class Files(models.Model):
     for i in range(0,10):
           AY=AY+((str(int(datetime.date.today().year)-1-int(i))+"-"+str(int(datetime.date.today().year)-int(i)),str(int(datetime.date.today().year)-1-int(i))+"-"+str(int(datetime.date.today().year)-int(i))),)
     academic_year = models.CharField('Academic Year',choices=AY,max_length=50,null=True)
-    semester = models.CharField('Upcoming Semester',choices=(('Sem 1','Sem 1'),('Sem 2','Sem 2')),max_length=50,null=True)
+    semester = models.CharField('Semester',choices=(('Sem 1','Sem 1'),('Sem 2','Sem 2')),max_length=50,null=True)
     department =models.CharField('Department name',choices=Department_Choice,max_length=50)
+   
     file = models.FileField(upload_to=dynamic_upload_path)
-
+    class Meta:
+        verbose_name = "Previous Files"  # Singular name for the model
+        verbose_name_plural = "Previous Files"
     def __str__(self):
         return f"{self.file}"
 

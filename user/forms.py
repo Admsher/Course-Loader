@@ -25,8 +25,9 @@ def classformuser(user,initial_val):
         Department_name = department_description.objects.get(Department_HOD=user)
         class classForm(forms.Form):
                 FIC = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),label="Instructor In Charge",)
-                Tutorials = forms.IntegerField(initial=initial_val['Tutorial'])   
                 Lectures = forms.IntegerField(initial=initial_val['Lectures'])  
+                Tutorials = forms.IntegerField(initial=initial_val['Tutorial'])   
+                
                 Labs= forms.IntegerField(initial=initial_val['Labs'])  
         return classForm
   

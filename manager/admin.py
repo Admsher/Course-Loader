@@ -4,6 +4,12 @@ from django.core.exceptions import FieldError
 import os
 from django.conf import settings
 import subprocess
+from django.utils.html import format_html
+from django.http import FileResponse
+from django.utils.html import format_html
+from django.urls import reverse
+import zipfile
+from django.http import HttpResponse
 class DepartmentFilter(admin.SimpleListFilter):
   
     title = 'Department'
@@ -119,13 +125,19 @@ class CustomUserAdmin(BaseUserAdmin):
 
 from .models import  Files,Cachefile
 class UploadAdmin(admin.ModelAdmin):
-    list_display = ['academic_year', 'semester', 'department', 'file']
+    list_display = ['academic_year', 'semester', 'department', 'file',]
     actions=["delete"]
+    
+    
+    
     def save_model(self, request, obj, form, change):
         
         if obj.file and (not change or obj.file != obj._meta.get_field('file').get_default()):
+            
             if os.path.exists(obj.file.path):
+                
                 os.remove(obj.file.path)
+
             obj.file.save(obj.file.name, obj.file, save=False)
 
         # Save the model instance
@@ -134,7 +146,8 @@ class UploadAdmin(admin.ModelAdmin):
 
     @admin.action(permissions=["delete_locally"] ,description="Delete file from server")
     def delete(self, request, obj):
-        
+        parts = str(instance).split('/')
+        instance=instance[-1]
         # Delete the file associated with the model instance
         for instance in obj:
             file_path = str(settings.BASE_DIR)+str(instance)
@@ -143,13 +156,13 @@ class UploadAdmin(admin.ModelAdmin):
                 print("exists")
                 os.remove(file_path)
             else:
-                file_path=str(settings.BASE_DIR)+f"\{instance.academic_year}\{instance.semester}\{instance.department}\{instance}"
+                file_path=str(settings.BASE_DIR)+f"{instance.academic_year}\{instance.semester}\{instance.department}\{instance}"
                 os.remove(file_path)
         
         # Delete the model instance
         super().delete_model(request, obj)
     delete.allowed_permissions=["delete"]
-
+    
 class UploadAdmincache(admin.ModelAdmin):
     list_display = ['file']
     actions=["delete"]

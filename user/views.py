@@ -320,23 +320,25 @@ def previewForm(request):
         for i in range(row_number[0],len(database[database.columns[1]])-1):
             if database.iloc[i][0] is not np.nan:
                 break
-            row_count=row_count+1    
+            row_count=row_count+1  
 
 
         section_list=[]
 
-        for i in range(0,row_count):
+        for i in range(0,row_count+1):
             section_list.append(database.iloc[row_number[0]+i][4])
        
         section_list_numpy=np.array(section_list)
         Number_of_Lectures=np.count_nonzero(section_list_numpy=="L")+1
         Number_of_Tutorials=np.count_nonzero(section_list_numpy=="T")
         Number_of_Labs=np.count_nonzero(section_list_numpy=="P")
+        print(section_list)
     except IndexError:
         Number_of_Lectures=0
         Number_of_Labs=0
+    
         Number_of_Tutorials=0
-
+ 
     Lecture_Faculty=[]
     Tutorial_Faculty=[]
     Labarotary_Faculty=[]
@@ -351,10 +353,10 @@ def previewForm(request):
      else:    
         Lecture_Faculty.append(str(database.iat[int(i+row_number-1),6]))
     for i in range(0,Number_of_Labs):
-      if str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures),6])=="nan":
+      if str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6])=="nan":
          Labarotary_Faculty.append("No Data")
       else:   
-         Labarotary_Faculty.append(str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures),6]))
+         Labarotary_Faculty.append(str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6]))
     for i in range(0,Number_of_Tutorials):
         if str(database.iat[int(i+row_number+Number_of_Lectures),6])=="nan":
          Tutorial_Faculty.append("No Data")
@@ -365,15 +367,15 @@ def previewForm(request):
     
     try:
         course_title=CDC_FD.objects.filter(CDC_ID=course_id).first().CDC_name  
-        print("FOund") 
+        print() 
         localStorage.setItem("course_title",course_title)
     except ObjectDoesNotExist:
-        print("Not Found")
+        print()
         try:
             course_title=CDC_HD.objects.filter(CDC_HD_ID=course_id).first().CDC_HD_name  
             localStorage.setItem("course_title",course_title) 
         except ObjectDoesNotExist:
-            print("Not FOund")
+            print("")
             try:
                 course_title=Elective_HD.objects.filter(Elective_HD_ID=course_id).first().Elective_HD_name
                 localStorage.setItem("course_title",course_title)   
@@ -544,11 +546,12 @@ def form_faculty_tut(request):
         Tut_Faculty=[]
         
        
+        Tutorial_number= int(localStorage.getItem('Tutorial_number'))
         
         label=localStorage.getItem('label')
         if label == 'No':
             facultyform2=facultyform2user(user=request.user)
-            Tutformset=formset_factory(facultyform2,extra=Lecture_Number)
+            Tutformset=formset_factory(facultyform2,extra=int(Tutorial_number))
         elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -559,7 +562,7 @@ def form_faculty_tut(request):
                         data = pickle.load(f)
             facultyform2=facultyform2user(user=request.user)
             faculty_names = data['Tutorial_Faculty']
-            Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=faculty_names,extra=Tutorial_number)
+            Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=faculty_names,extra=int(Tutorial_number))
 
     
         if request.method=="POST":
@@ -593,12 +596,12 @@ def form_faculty_lab(request):
          submitted=False
          Lab_Faculty=[]
          Department_name = department_description.objects.get(Department_HOD=request.user)
-         
+         Lab_number= int(localStorage.getItem('Lab_number'))
          
          label=localStorage.getItem('label')
          if label == 'No':
             facultyform3=facultyform3user(user=request.user)
-            Labformset=formset_factory(facultyform3,extra=Lecture_Number)
+            Labformset=formset_factory(facultyform3,extra=int(Lab_number))
          elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -609,7 +612,7 @@ def form_faculty_lab(request):
                         data = pickle.load(f)
             facultyform3=facultyform3user(user=request.user)
             faculty_names = data['Labaratory_Faculty']
-            Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=faculty_names,extra=Lab_number)
+            Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=faculty_names,extra=int(Lab_number))
          
          
          
@@ -681,6 +684,7 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
            cell_value = sheet[f'{column}{row}'].value
            if cell_value==course_id:
             row_if_present=row
+            print(row_if_present)
             break
        if row_if_present!="":
             for i in range(int(row_if_present)+1,sheet.max_row):
@@ -692,8 +696,10 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                     break
             if next_row_entry=="":
                 next_row_entry=sheet.max_row
-          
-            sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present))
+            if row_if_present==1:
+                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present))
+            else:
+                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present+1))
            
        last_row=sheet.max_row
        

@@ -51,7 +51,9 @@ def append_excel_data_to_model(file_path):
                     Department=row['dept'],
                    
                 )
+               
                 instance.save()
+                
         elif row['stat'] == 'PHD':
             existing_phd = PHD_List.objects.filter(first_name=row['full name'], Department=row['dept']).exists()
             if not existing_phd:
@@ -62,6 +64,8 @@ def append_excel_data_to_model(file_path):
               
                 )
                 instance.save()
+                class Meta:
+                     ordering = ['first_name']
    
 
 def append_excel_data_to_model_cdc(file_path,file_sheet):
