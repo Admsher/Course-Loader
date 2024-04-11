@@ -112,14 +112,14 @@ def upload(request):
         Department=department_description.objects.get(Department_HOD=request.user)
     except TypeError:
         return HttpResponseRedirect('login_user')
-    academic_year=str(str(datetime.date.today().year)+"/"+str(int(datetime.date.today().year)+1))
-
+    academic_year=str(str(datetime.date.today().year)+"-"+str(int(datetime.date.today().year)+1))
+    current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     context = {"academic_year":academic_year,"Department":Department}
     if request.method == "POST":
         uploaded_file = request.FILES['document']
-        fs = FileSystemStorage()
+        fs = FileSystemStorage(location=str(academic_year)+"/"+current_sem+"/"+str(Department))
         name = fs.save(uploaded_file.name, uploaded_file)
-        context['url'] = fs.url(name)
+        context['url'] = fs.url(str(academic_year)+"/"+current_sem+"/"+str(Department)+"/"+str(name))
     return render(request, 'homepage/upload.html', context)
 
 
@@ -159,7 +159,8 @@ def choose_new_table(request):
             df=df.fillna("")
             message=""
             tablePresent=True
-            df=df.to_html()
+            df.reset_index(drop=True, inplace=True)
+            df=df.to_html(index=False)
     except FileNotFoundError:
         df=""
         message="Table not created yet."
