@@ -97,11 +97,11 @@ def append_excel_data_to_model_cdc(file_path,file_sheet):
             else:
                    existing_CDC_HD = CDC_HD.objects.filter(CDC_HD_name=row['COURSE TITLE'], CDC_HD_Department=row['DEPT']).exists()
                    if not existing_CDC_HD:
-                    instance = CDC_FD(
-                        CDC_ID=row['COURSE NO'],
-                        CDC_name=row['COURSE TITLE'],
-                        CDC_Department=row['DEPT'],
-                        Upcoming_Sem_FD=row['SEM']
+                    instance = CDC_HD(
+                        CDC_HD_ID=row['COURSE NO'],
+                        CDC_HD_name=row['COURSE TITLE'],
+                        CDC_HD_Department=row['DEPT'],
+                        Upcoming_Sem_HD=row['SEM']
                    
                 )
                 
