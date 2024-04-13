@@ -185,7 +185,7 @@ class Files(models.Model):
             pass
 
 def dynamic_upload_path_cache(instance, filename):
-    return f"Pickles"
+    return f"Pickles/"
 
 class Cachefile(models.Model):
     file = models.FileField(upload_to=dynamic_upload_path_cache)

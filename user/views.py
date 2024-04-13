@@ -52,7 +52,8 @@ class MyFormsetFactory:
             if self.phd_initial:
                 form.fields['PHD'].initial = self.phd_initial[index] if index < len(self.phd_initial) else None
             if self.faculty_initial:
-                form.fields['Faculty'].initial = self.faculty_initial[index] if index < len(self.faculty_initial) else None
+               form.fields['Faculty'].initial = self.faculty_initial[index] if index < len(self.faculty_initial) else None
+
 
 
 
@@ -278,7 +279,7 @@ def previewForm(request):
     if request.method == 'GET':
            course_id = request.GET.get('data')
            localStorage.setItem('course_id',course_id)
-          
+
     current_sem=department_description.objects.get(Department_HOD=request.user).Upcoming_Sem
     academic_year_folder=str(department_description.objects.get(Department_HOD=request.user).Academic_year)
     Department_name = department_description.objects.get(Department_HOD=request.user)
@@ -288,8 +289,10 @@ def previewForm(request):
     path1=('Pickles/Courses for Course Load Submission '+str(Department_name)+'.xlsx')
 
     if Path(path1).exists():
-        database=pd.read_excel(path1,sheet_name=str(Department_name))
-      
+        try:
+            database=pd.read_excel(path1,sheet_name=str(Department_name))
+        except (ValueError,UnboundLocalError,FileNotFoundError):
+             database=pd.read_excel("cache.xlsx")
 
     else:
         for filename in os.listdir(path):
@@ -299,11 +302,10 @@ def previewForm(request):
         try:
             database=pd.read_excel(filepath,sheet_name=str(Department_name))
         
-        except UnboundLocalError:
+        except (ValueError,UnboundLocalError,FileNotFoundError):
             database=pd.read_excel("cache.xlsx")
             
-        except FileNotFoundError :
-            database=pd.read_excel("cache.xlsx")
+       
 
     
    
@@ -311,10 +313,9 @@ def previewForm(request):
         database=database.drop([0])
         database=database.drop(database.columns[7],axis=1)
         database=database.drop(database.columns[8],axis=1)
-    except IndexError:
+    except (IndexError,KeyError):
         print()
-    except KeyError:
-        print()
+    
     try:
         row_number=database[database.eq(course_id).any(axis=1)].index.to_numpy()
         row_count=0
@@ -367,25 +368,26 @@ def previewForm(request):
 
     
     try:
+        
         course_title=CDC_FD.objects.filter(CDC_ID=course_id).first().CDC_name  
         print() 
         localStorage.setItem("course_title",course_title)
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, AttributeError):
         print()
         try:
             course_title=CDC_HD.objects.filter(CDC_HD_ID=course_id).first().CDC_HD_name  
             localStorage.setItem("course_title",course_title) 
-        except ObjectDoesNotExist:
+        except (ObjectDoesNotExist, AttributeError):
             print("")
             try:
                 course_title=Elective_HD.objects.filter(Elective_HD_ID=course_id).first().Elective_HD_name
                 localStorage.setItem("course_title",course_title)   
-            except ObjectDoesNotExist:
+            except (ObjectDoesNotExist, AttributeError):
                 print()
                 try:
                     course_title=Elective_FD.objects.filter(Elective_ID=course_id).first().Elective_name
                     localStorage.setItem("course_title",course_title)   
-                except ObjectDoesNotExist:
+                except (ObjectDoesNotExist, AttributeError):
                     print()
     data = {
     'FIC': FIC_preview,
@@ -502,7 +504,14 @@ def form_faculty_lec(request):
                 data = pickle.load(f)
       facultyform1=facultyform1user(user=request.user)
       faculty_names = data['Lecture_Faculty']
-      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=data['Lecture_Faculty'],faculty_initial=faculty_names,extra=Lecture_Number)
+      faculty_names_split = [
+    entry.strip() for names in faculty_names for entry in names.split('/')
+
+]
+
+        # faculty_names_prepended now contains the modified strings with "Prepended Data" added to each entry
+     
+      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=faculty_names_split,faculty_initial=faculty_names_split,extra=Lecture_Number)
 
  
 

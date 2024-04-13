@@ -146,17 +146,19 @@ class UploadAdmin(admin.ModelAdmin):
 
     @admin.action(permissions=["delete_locally"] ,description="Delete file from server")
     def delete(self, request, obj):
-        parts = str(instance).split('/')
-        instance=instance[-1]
+        
+            
         # Delete the file associated with the model instance
         for instance in obj:
-            file_path = str(settings.BASE_DIR)+str(instance)
+            parts = str(instance).split('/')
+            part=parts[-1]
+            file_path = str(settings.BASE_DIR)+str(part)
             print(file_path)
             if os.path.exists(file_path):
                 print("exists")
                 os.remove(file_path)
             else:
-                file_path=str(settings.BASE_DIR)+f"{instance.academic_year}\{instance.semester}\{instance.department}\{instance}"
+                file_path=str(settings.BASE_DIR)+f"\{instance}"
                 os.remove(file_path)
         
         # Delete the model instance

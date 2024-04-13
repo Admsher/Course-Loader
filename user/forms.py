@@ -17,7 +17,13 @@ class CustomModelMultipleChoiceField(forms.ModelMultipleChoiceField):
         # Perform custom validation or cleaning logic here if needed
         return cleaned_data
 
-
+class CustomModelMultipleChoiceField1(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        try:
+                return obj.Elective_HD_name
+        except AttributeError:
+                return obj.Elective_name
+                
 
 
 
@@ -48,6 +54,10 @@ def facultyform1user(user):
 
                 Faculty = CustomModelMultipleChoiceField(queryset=faculty_queryset, required=True)
                 PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
+                def __init__(self, *args, faculty_initial=None, **kwargs):
+                        super().__init__(*args, **kwargs)
+                        if faculty_initial:
+                                self.fields['Faculty'].initial = faculty_initial
     
     return facultyform1
 
@@ -81,13 +91,14 @@ def facultyform2user(user):
 def Electiveform_FDuser(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class ElectiveForm_FD(forms.Form):
-                Elective_ID=forms.ModelMultipleChoiceField(queryset=Elective_FD.objects.filter(Elective_Department=Department_name),widget=forms.CheckboxSelectMultiple,label="",required=False)
+                Elective_ID=CustomModelMultipleChoiceField1(queryset=Elective_FD.objects.filter(Elective_Department=Department_name),widget=forms.CheckboxSelectMultiple,label="",required=False)
         return ElectiveForm_FD
 
 def Electiveform_HDuser(user):
         Department_name = department_description.objects.get(Department_HOD=user)
         class ElectiveForm_HD(forms.Form):
-                Elective_ID=forms.ModelMultipleChoiceField(queryset=(Elective_HD.objects.filter(Elective_HD_Department=Department_name)),widget=forms.CheckboxSelectMultiple,label="",required=False)
+                Elective_ID=CustomModelMultipleChoiceField1(queryset=(Elective_HD.objects.filter(Elective_HD_Department=Department_name)),widget=forms.CheckboxSelectMultiple,label="",required=False)
+               
         return ElectiveForm_HD
 
 class Semform(forms.Form):
