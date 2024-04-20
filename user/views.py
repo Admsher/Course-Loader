@@ -32,7 +32,9 @@ import os
 from localStoragePy import localStoragePy
 from django.forms.models import model_to_dict
 from django.db.models import Q
-
+from django.http import FileResponse
+from django.conf import settings
+import json
 
 
 
@@ -161,7 +163,7 @@ def choose_new_table(request):
             message=""
             tablePresent=True
             df.reset_index(drop=True, inplace=True)
-            df=df.to_html(index=False)
+            df=df.to_html(index=False,)
     except FileNotFoundError:
         df=""
         message="Table not created yet."
@@ -172,6 +174,12 @@ def choose_new_table(request):
             return Elective_HD_list(request=request)
     if request.GET.get("elective_fd"):
             return Elective_FD_list(request=request)
+    download_path=((academic_year_folder)+"/"+str(current_sem)+"/"+str(Department_name)+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+".xlsx")
+   
+    fs = FileSystemStorage()
+    if fs.exists(download_path):
+        download_path=fs.url(download_path)
+    
     if request.method=="POST":
 
         form=Semform(request.POST or None)
@@ -194,12 +202,15 @@ def choose_new_table(request):
                 else:
                     file_old.save(file_old_path)
             
+            
             file.save(path+"/Courses for Course Load Submission "+str(current_sem)+" "+str(Department_name)+".xlsx")
+        
+            
     else:
         form=Semform()
     
     
-    return render(request, 'homepage/choose_new_table.html', {"message":message,"table":df,"bool":tablePresent,"form":form,"attempts":attempts_remaining,"sem":current_sem})
+    return render(request, 'homepage/choose_new_table.html', {"message":message,"table":df,"bool":tablePresent,"form":form,"attempts":attempts_remaining,"sem":current_sem,"download":download_path})
 
  
 def CDC_FD_list(request):
@@ -432,7 +443,7 @@ def form_CDC(request):
     label=request.GET.get('label')
     localStorage.setItem('label',label)
     if label=='No':
-        formclass=classformuser(user=request.user,initial_val={'Lectures':0,'Tutorial':0,'Labs':0})
+        formclass=classformuser(user=request.user,initial_val={'FIC':'','Lectures':0,'Tutorial':0,'Labs':0})
     elif label=='Modify':
         try:
             with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -441,7 +452,7 @@ def form_CDC(request):
             open("Pickles/"+str(Department_name)+'_form.pkl','a')
             with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
                 data = pickle.load(f)   
-        formclass=classformuser(user=request.user,initial_val={'Lectures':int(data['Number_of_Lectures']),'Tutorial':int(data['Number_of_Tutorials']),'Labs':int(data['Number_of_Labs'])})
+        formclass=classformuser(user=request.user,initial_val={'FIC':str(data['FIC']),'Lectures':int(data['Number_of_Lectures']),'Tutorial':int(data['Number_of_Tutorials']),'Labs':int(data['Number_of_Labs'])})
    
         
         
@@ -493,7 +504,8 @@ def form_faculty_lec(request):
  label=localStorage.getItem('label')
  if label == 'No':
     facultyform1=facultyform1user(user=request.user)
-    Lectureformset=formset_factory(facultyform1,extra=Lecture_Number)
+    Lectureformset=formset_factory(facultyform1,extra=Lecture_Number,)
+    faculty_names=[]
  elif label=='Modify':
       try:
             with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -504,15 +516,18 @@ def form_faculty_lec(request):
                 data = pickle.load(f)
       facultyform1=facultyform1user(user=request.user)
       faculty_names = data['Lecture_Faculty']
-      faculty_names_split = [
-    entry.strip() for names in faculty_names for entry in names.split('/')
-
-]
-
-        # faculty_names_prepended now contains the modified strings with "Prepended Data" added to each entry
      
-      Lectureformset=MyFormsetFactory(facultyform1,phd_initial=faculty_names_split,faculty_initial=faculty_names_split,extra=Lecture_Number)
+      faculty_names_split = [names.split('/') for names in faculty_names]
 
+      faculty_names_json = json.dumps(faculty_names_split)
+
+
+
+      facultyform1=facultyform1user(user=request.user)
+      Lectureformset=formset_factory(facultyform1,extra=Lecture_Number,)
+   
+      
+    
  
 
 
@@ -524,22 +539,24 @@ def form_faculty_lec(request):
 
 
         form_lec=Lectureformset(request.POST or None)
-       
+    
         if form_lec.is_valid(): 
             try:
              for form in form_lec:
+                
                 faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
                 phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
                 overall_names=faculty_names+'/'+phd_names
                 Lec_Faculty.append(overall_names)
             except KeyError:
+               
                 return HttpResponseRedirect('form_Faculty_Lec') 
            
             return  HttpResponseRedirect('form_Faculty_Tut')
                 
             
 
- return render(request, 'homepage/facultyForm_Lec.html', {'Lectureformset': Lectureformset})
+ return render(request, 'homepage/facultyForm_Lec.html', {'Lectureformset': Lectureformset,"faculty_name":faculty_names_json})
 
 
 
@@ -562,6 +579,7 @@ def form_faculty_tut(request):
         if label == 'No':
             facultyform2=facultyform2user(user=request.user)
             Tutformset=formset_factory(facultyform2,extra=int(Tutorial_number))
+            faculty_names=[]
         elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -572,6 +590,10 @@ def form_faculty_tut(request):
                         data = pickle.load(f)
             facultyform2=facultyform2user(user=request.user)
             faculty_names = data['Tutorial_Faculty']
+            faculty_names_split = [names.split('/') for names in faculty_names]
+
+            faculty_names_json = json.dumps(faculty_names_split)
+
             Tutformset=MyFormsetFactory(facultyform2,phd_initial=data['Tutorial_Faculty'],faculty_initial=faculty_names,extra=int(Tutorial_number))
 
     
@@ -592,7 +614,7 @@ def form_faculty_tut(request):
                     return HttpResponseRedirect('form_Faculty_Tut') 
 
                 return  HttpResponseRedirect('form_Faculty_Lab')
-        return render(request, 'homepage/facultyForm_Tut.html', {"Tutformset":Tutformset})
+        return render(request, 'homepage/facultyForm_Tut.html', {"Tutformset":Tutformset,"faculty_name":faculty_names_json})
 
 
 
@@ -612,6 +634,7 @@ def form_faculty_lab(request):
          if label == 'No':
             facultyform3=facultyform3user(user=request.user)
             Labformset=formset_factory(facultyform3,extra=int(Lab_number))
+            faculty_names=[]
          elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -622,6 +645,11 @@ def form_faculty_lab(request):
                         data = pickle.load(f)
             facultyform3=facultyform3user(user=request.user)
             faculty_names = data['Labaratory_Faculty']
+      
+            faculty_names_split = [names.split(',') for names in faculty_names]
+
+            faculty_names_json = json.dumps(faculty_names_split)
+
             Labformset=MyFormsetFactory(facultyform3,phd_initial=data['Labaratory_Faculty'],faculty_initial=faculty_names,extra=int(Lab_number))
          
          
@@ -668,7 +696,7 @@ def form_faculty_lab(request):
                     create_file(request=request,FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
                     return  HttpResponseRedirect('choose_new_table')
                 
-         return render(request, 'homepage/facultyForm_Lab.html', {"Labformset":Labformset,"submitted":submitted})
+         return render(request, 'homepage/facultyForm_Lab.html', {"Labformset":Labformset,"submitted":submitted,"faculty_name":faculty_names_json})
 
 
 

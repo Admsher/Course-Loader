@@ -67,6 +67,27 @@ You have already submitted the form.Please let the administrator know if this is
         tr:nth-child(even) {
             background-color: #dddddd;
         }
+        th {
+            
+            
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            
+         
+            background-color: #dddddd;
+        }
+        tr:nth-child(even) th ::before{
+            content: "Section " counter(th-counter) " ";
+            color: #111111;
+        }
+        tr:nth-child(even) {
+        counter-increment: th-counter;
+    
+    }
     </style>
 
 
@@ -89,19 +110,19 @@ You have already submitted the form.Please let the administrator know if this is
         </tr>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <br><br>
-
+        <div id="faculty_names" data-faculty-names="{{ faculty_name|escapejs }}"></div>
         <center><input type="text" id="searchInput" placeholder="Search..."></center>
         <br><br>
         <tr>
             <center>
 
-                {{Tutformset.as_p}}
+                {{Tutformset.as_table }}
 
             </center>
         </tr>
         <br><br>
 
-
+    </table>
         <center>
             <input type="submit" value="Next" class="button">
             <input type="reset" value="Clear" class="button3">
@@ -154,6 +175,63 @@ You have already submitted the form.Please let the administrator know if this is
 
 </script>
 
+<script>
+    var facultyNamesElement = document.getElementById('faculty_names');
+    var faculty_names_string = facultyNamesElement.getAttribute('data-faculty-names');
 
+// Unescape Unicode characters
+var faculty_names = JSON.parse(faculty_names_string.replace(/\\u[\dA-F]{4}/gi, function(match) {
+    return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+}));
+console.log(faculty_names)
+    
+
+    // print(selectElements)
+    // Loop through each faculty name and add it as an option
+//    console.log(select)
+var formsfaculty = document.querySelectorAll('[name^="form-"][name$="-Faculty"]');
+var formsPHD = document.querySelectorAll('[name^="form-"][name$="-PHD"]');
+
+
+formsfaculty.forEach(function(form,i) {
+    faculty_names_array=faculty_names[i];
+    console.log(faculty_names_array)
+    // Find the select element within the current form
+    var select = form;
+    
+    if (select) {
+        // Iterate over the options of the select element
+        for (var i = 0; i < select.options.length; i++) {
+            var option = select.options[i];
+            // Check if the option text is present in faculty_names array
+            if (faculty_names_array.includes(option.textContent)) {
+                // Set the option as selected
+                option.selected = true;
+            }
+        }
+    } else {
+        console.error('No select element found within form:', form);
+    }
+});
+formsPHD.forEach(function(form,i) {
+    // Find the select element within the current form
+    var select = form;
+    faculty_names_array=faculty_names[i];
+    
+    if (select) {
+        // Iterate over the options of the select element
+        for (var i = 0; i < select.options.length; i++) {
+            var option = select.options[i];
+            // Check if the option text is present in faculty_names array
+            if (faculty_names_array.includes(option.textContent)) {
+                // Set the option as selected
+                option.selected = true;
+            }
+        }
+    } else {
+        console.error('No select element found within form:', form);
+    }
+});
+</script>
 
 {% endblock %}

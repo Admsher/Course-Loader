@@ -98,12 +98,23 @@
 
 
 <body>
+  <alert>
+    
+  </alert>
  
-    <a href="#" class="button button6" id="myButton"><small> Preview </small></a>
+    
 
 
-    <br/>   <br/> <br>  <center><small><b>Submissions remaining: {{attempts}}</b>  </small></center> <br/> <br/>   <br/>   <br/> <br/>   <br/>   <br/>
+    <br/>   <br/> <br>   <br/> <br/>   <br/>   <br/> <br/>   <br/>   <br/>
+    <center>{%if download %}
+      {% with file_name=download|cut:"user/" %}
+      <p> <b> Previously Uploaded file: <a href="{{download}}">Click here to download</a></p></center></b>
+    {% endwith %}
+    
+      {% endif %}
+    </center>
     <center>
+      
     <a href="{% url 'CDC_FD_list' %}" class="button button2">First Degree CDC</a>
 </center>
 <center>
@@ -127,6 +138,7 @@
   <p><a href="{% url 'WILP_list' %}" class="button button7">WILP</a></p>
   
 </center>
+<a href="#" class="button button6" id="myButton"><small> Preview and Submit</small></a>
 
 
 <div id="myPopup" class="popup">
@@ -138,6 +150,7 @@
     <form action="" method="post">
       {% csrf_token %}
       {% if bool%}
+      <center><small><b>Submissions remaining: {{attempts}}</b>  </small></center>  
       <b>For Sem: {{sem}}</b>
       {{form.as_p}}
       {{table | safe}}

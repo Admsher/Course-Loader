@@ -30,15 +30,45 @@
     .button3 {background-color: #f44336;} /* Red */ 
     .button4 {background-color: #e7e7e7; color: black;} /* Gray */ 
     .button5 {background-color: #555555;} /* Black */
+    
+    /* Style the tooltip */
+.button6 {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.button6::after {
+  content: attr(title);
+  position: absolute;
+  visibility: hidden;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the button */
+.button6:hover::after {
+  visibility: visible;
+}
+
+    
     </style>
+    
 </head>
 
 <br/>   <br/>   <br/> <br/>  <br/>   <br/>   <br/>  <br/>   <br/>
 <body>
     <center>
-    <p><a href="{% url 'upload' %}" class="button">Upload existing file</a></p>
+      <a href="{% url 'upload' %}" class="button" title="Upload additional comments/Course load Excel File">
+        Upload File
+    </a>
     
-    <a href="{% url 'choose_new_table' %}" class="button button2">Create new file</a>
+    <a href="{% url 'choose_new_table' %}" class="button button2">Proceed to Course Load entry</a>
 </center>
 </body>
 </html>

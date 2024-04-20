@@ -154,7 +154,15 @@
     <tr>
 
         <td>
+            
             <center>
+                <left>
+                {% if cdc_name in match_list %}
+                Course entry initiated
+                {%else%}
+                Course entry remaining
+                {%endif%}
+            </left>
 
                 <a href="{% url 'previewForm'%}?data={{cdc_name}}" value="{{cdc_name}}"  onmouseover="myFunction('myPopup{{ forloop.counter }}')"
                     class="button button4{% if cdc_name in match_list %} button-green{% else %} button-red{% endif %}"> {{cdc_name}}  <span class="indicator"> <span class="popuptext" id="myPopup{{ forloop.counter }}">{{cdc_name.CDC_name}}</span></span> </a>

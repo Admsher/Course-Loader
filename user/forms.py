@@ -30,7 +30,7 @@ class CustomModelMultipleChoiceField1(forms.ModelMultipleChoiceField):
 def classformuser(user,initial_val):
         Department_name = department_description.objects.get(Department_HOD=user)
         class classForm(forms.Form):
-                FIC = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),label="Instructor In Charge",)
+                FIC = forms.ModelChoiceField(queryset=Faculty_List.objects.filter(Department=Department_name),initial=initial_val['FIC'],)
                 Lectures = forms.IntegerField(initial=initial_val['Lectures'])  
                 Tutorials = forms.IntegerField(initial=initial_val['Tutorial'])   
                 
@@ -50,7 +50,7 @@ def facultyform1user(user):
                 faculty_queryset = Faculty_List.objects.filter(Department=department_name)
                 phd_queryset = PHD_List.objects.filter(Department=department_name)
 
-      
+       
 
                 Faculty = CustomModelMultipleChoiceField(queryset=faculty_queryset, required=True)
                 PHD=forms.ModelMultipleChoiceField(queryset=phd_queryset, required=False)
