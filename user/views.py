@@ -462,7 +462,7 @@ def form_CDC(request):
         form = formclass(request.POST) 
 
         if form.is_valid():
-                FIC=form.cleaned_data["FIC"]
+                FIC=form.cleaned_data["IIC"]
                 localStorage.setItem('cdc_FIC',FIC)
                 request.session['Tuts']=form.cleaned_data["Tutorials"]
                 request.session['Lec']=form.cleaned_data["Lectures"]
@@ -506,6 +506,7 @@ def form_faculty_lec(request):
     facultyform1=facultyform1user(user=request.user)
     Lectureformset=formset_factory(facultyform1,extra=Lecture_Number,)
     faculty_names=[]
+    faculty_names_json=json.dumps(faculty_names)
  elif label=='Modify':
       try:
             with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -546,7 +547,12 @@ def form_faculty_lec(request):
                 
                 faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
                 phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
-                overall_names=faculty_names+'/'+phd_names
+                if str(faculty_names)=="":
+                    overall_names=phd_names
+                elif str(phd_names)=="":
+                    overall_names=faculty_names
+                else:
+                    overall_names=faculty_names+'/'+phd_names
                 Lec_Faculty.append(overall_names)
             except KeyError:
                
@@ -580,6 +586,7 @@ def form_faculty_tut(request):
             facultyform2=facultyform2user(user=request.user)
             Tutformset=formset_factory(facultyform2,extra=int(Tutorial_number))
             faculty_names=[]
+            faculty_names_json=json.dumps(faculty_names)
         elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -608,7 +615,12 @@ def form_faculty_tut(request):
                  for form in form_tut:
                      faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
                      phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
-                     overall_names=faculty_names+'/'+phd_names
+                     if str(faculty_names)=="":
+                        overall_names=phd_names
+                     elif str(phd_names)=="":
+                        overall_names=faculty_names
+                     else:
+                        overall_names=faculty_names+'/'+phd_names
                      Tut_Faculty.append(overall_names)
                 except KeyError:
                     return HttpResponseRedirect('form_Faculty_Tut') 
@@ -635,6 +647,7 @@ def form_faculty_lab(request):
             facultyform3=facultyform3user(user=request.user)
             Labformset=formset_factory(facultyform3,extra=int(Lab_number))
             faculty_names=[]
+            faculty_names_json=json.dumps(faculty_names)
          elif label=='Modify':
             try:
                 with open("Pickles/"+str(Department_name)+'_form.pkl', 'rb') as f:
@@ -668,7 +681,12 @@ def form_faculty_lab(request):
                         faculty_names = ','.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
                         phd_names= ','.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
                     
-                        overall_names=faculty_names+','+phd_names
+                        if str(faculty_names)=="":
+                            overall_names=phd_names
+                        elif str(phd_names)=="":
+                            overall_names=faculty_names
+                        else:
+                            overall_names=faculty_names+','+phd_names
                         Lab_Faculty.append(overall_names)
                     
 
