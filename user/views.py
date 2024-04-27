@@ -329,8 +329,9 @@ def previewForm(request):
     
     try:
         row_number=database[database.eq(course_id).any(axis=1)].index.to_numpy()
+        # print(row_number[0])
         row_count=0
-        for i in range(row_number[0],len(database[database.columns[1]])-1):
+        for i in range(row_number[0],len(database[database.columns[1]])):
             if database.iloc[i][0] is not np.nan:
                 break
             row_count=row_count+1  
@@ -338,11 +339,13 @@ def previewForm(request):
 
         section_list=[]
 
-        for i in range(0,row_count+1):
+        for i in range(-1,row_count):
+            print(row_number[0]+i,database.iloc[row_number[0]+i][4])
             section_list.append(database.iloc[row_number[0]+i][4])
        
         section_list_numpy=np.array(section_list)
-        Number_of_Lectures=np.count_nonzero(section_list_numpy=="L")+1
+        # print(section_list)
+        Number_of_Lectures=np.count_nonzero(section_list_numpy=="L")
         Number_of_Tutorials=np.count_nonzero(section_list_numpy=="T")
         Number_of_Labs=np.count_nonzero(section_list_numpy=="P")
         print(section_list)
@@ -371,7 +374,7 @@ def previewForm(request):
       else:   
          Labarotary_Faculty.append(str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6]))
     for i in range(0,Number_of_Tutorials):
-        if str(database.iat[int(i+row_number+Number_of_Lectures),6])=="nan":
+        if str(database.iat[int(i+row_number+Number_of_Lectures-1),6])=="nan":
          Tutorial_Faculty.append("No Data")
         else: 
          Tutorial_Faculty.append(str(database.iat[int(i+row_number+Number_of_Lectures-1),6]))
@@ -425,7 +428,7 @@ def previewForm(request):
         
         create_file(request=request,FIC_name=FIC_preview,Lecture=Number_of_Lectures,Lab=Number_of_Labs,Tutorial=Number_of_Tutorials,Faculty_Lec=Lecture_Faculty,Faculty_Tut=Tutorial_Faculty,Faculty_Lab=Labarotary_Faculty)
         return  HttpResponseRedirect('choose_new_table')
-    return render(request,'homepage/previewForm.html',{'Lectures':Number_of_Lectures,'Tutorial':Number_of_Tutorials,'Labs':Number_of_Labs,"CDC_name":course_title,"Lab_Faculty":Labarotary_Faculty,"Tut_Faculty":Tutorial_Faculty,"Lec_Faculty":Lecture_Faculty})
+    return render(request,'homepage/previewForm.html',{'Lectures':Number_of_Lectures,'Tutorial':Number_of_Tutorials,'Labs':Number_of_Labs,"CDC_name":course_title,"Lab_Faculty":Labarotary_Faculty,"Tut_Faculty":Tutorial_Faculty,"Lec_Faculty":Lecture_Faculty,"FIC":FIC_preview})
 
 
 
@@ -542,11 +545,19 @@ def form_faculty_lec(request):
         form_lec=Lectureformset(request.POST or None)
     
         if form_lec.is_valid(): 
-            try:
-             for form in form_lec:
-                
-                faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+            
+            for form in form_lec:
+                try:
+                    faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                except KeyError:
+                    faculty_names=""
+                try:    
+                    phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                except KeyError:
+                    phd_names=""
+                if faculty_names=="" and phd_names=="":
+                         return HttpResponseRedirect('form_Faculty_Lec')
+                    
                 if str(faculty_names)=="":
                     overall_names=phd_names
                 elif str(phd_names)=="":
@@ -554,9 +565,7 @@ def form_faculty_lec(request):
                 else:
                     overall_names=faculty_names+'/'+phd_names
                 Lec_Faculty.append(overall_names)
-            except KeyError:
-               
-                return HttpResponseRedirect('form_Faculty_Lec') 
+           
            
             return  HttpResponseRedirect('form_Faculty_Tut')
                 
@@ -611,10 +620,18 @@ def form_faculty_tut(request):
             form_tut=Tutformset(request.POST or None)
 
             if form_tut.is_valid():
-                try:
-                 for form in form_tut:
-                     faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                     phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+            
+                for form in form_tut:
+                     try:
+                        faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                     except KeyError:
+                        faculty_names=""
+                     try:    
+                        phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                     except KeyError:
+                        phd_names=""
+                     if faculty_names=="" and phd_names=="":
+                         return HttpResponseRedirect('form_Faculty_Tut')
                      if str(faculty_names)=="":
                         overall_names=phd_names
                      elif str(phd_names)=="":
@@ -622,8 +639,7 @@ def form_faculty_tut(request):
                      else:
                         overall_names=faculty_names+'/'+phd_names
                      Tut_Faculty.append(overall_names)
-                except KeyError:
-                    return HttpResponseRedirect('form_Faculty_Tut') 
+               
 
                 return  HttpResponseRedirect('form_Faculty_Lab')
         return render(request, 'homepage/facultyForm_Tut.html', {"Tutformset":Tutformset,"faculty_name":faculty_names_json})
@@ -676,10 +692,18 @@ def form_faculty_lab(request):
             form_lab=Labformset(request.POST or None)
             submitted=True
             if form_lab.is_valid():
-                try:
-                    for form in form_lab:
-                        faculty_names = ','.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
-                        phd_names= ','.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                
+                for form in form_lab:
+                        try:
+                           faculty_names = '/'.join(faculty.first_name for faculty in form.cleaned_data['Faculty'])
+                        except KeyError:
+                            faculty_names=""
+                        try:    
+                            phd_names= '/'.join(faculty.first_name for faculty in form.cleaned_data['PHD'])
+                        except KeyError:
+                            phd_names=""
+                        if faculty_names=="" and phd_names=="":
+                            return HttpResponseRedirect('form_Faculty_Lab')
                     
                         if str(faculty_names)=="":
                             overall_names=phd_names
@@ -691,21 +715,20 @@ def form_faculty_lab(request):
                     
 
             # Save updated course_titles list to pickle file
-                    if os.path.exists('Pickles/course_titles'+str(Department_name)+'.pickle'):
+                if os.path.exists('Pickles/course_titles'+str(Department_name)+'.pickle'):
                      # Load existing course_titles from the pickle file
                         with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'rb') as f:
                             course_titles = pickle.load(f)
-                    else:
+                else:
                      # If the pickle file doesn't exist, create an empty list
                         course_titles = []
                     
-                    course_titles.append(course_title)
+                course_titles.append(course_title)
                  
-                    with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'wb') as f:
+                with open('Pickles/course_titles'+str(Department_name)+'.pickle', 'wb') as f:
                         pickle.dump(course_titles, f)      
                         
-                except KeyError:
-                    return HttpResponseRedirect('form_Faculty_Lab') 
+              
                 try:
                     create_file(request=request,FIC_name=FIC,Lecture=Lecture_Number,Tutorial=Tutorial_number,Lab=Lab_number,Faculty_Lab=Lab_Faculty,Faculty_Lec=Lec_Faculty,Faculty_Tut=Tut_Faculty)
                     return  HttpResponseRedirect('choose_new_table')
@@ -752,10 +775,11 @@ def create_file(request,FIC_name,Lecture,Tutorial,Lab,Faculty_Lec,Faculty_Lab,Fa
                     break
             if next_row_entry=="":
                 next_row_entry=sheet.max_row
+            print(row_if_present)
             if row_if_present==1:
-                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present))
+                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present-1))
             else:
-                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present+1))
+                sheet.delete_rows(row_if_present,int(next_row_entry-row_if_present))
            
        last_row=sheet.max_row
        
