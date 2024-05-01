@@ -362,23 +362,33 @@ def previewForm(request):
         FIC_preview=str(database.iat[int(row_number-1),5])
     except TypeError:
         FIC_preview=""
+
+    try:
     
-    for i in range(0,Number_of_Lectures):
-     if str(database.iat[int(i+row_number-1),6])=="nan":
-         Lecture_Faculty.append("No Data")
-     else:    
-        Lecture_Faculty.append(str(database.iat[int(i+row_number-1),6]))
-    for i in range(0,Number_of_Labs):
-      if str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6])=="nan":
-         Labarotary_Faculty.append("No Data")
-      else:   
-         Labarotary_Faculty.append(str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6]))
-    for i in range(0,Number_of_Tutorials):
-        if str(database.iat[int(i+row_number+Number_of_Lectures-1),6])=="nan":
+        for i in range(0,Number_of_Lectures):
+            if str(database.iat[int(i+row_number-1),6])=="nan":
+                    Lecture_Faculty.append("No Data")
+            else:    
+                Lecture_Faculty.append(str(database.iat[int(i+row_number-1),6]))
+    except (ValueError,TypeError):
+            Lecture_Faculty.append("No Data")
+    try:
+        for i in range(0,Number_of_Labs):
+            if str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6])=="nan":
+                Labarotary_Faculty.append("No Data")
+            else:   
+                Labarotary_Faculty.append(str(database.iat[int(i+row_number+Number_of_Tutorials+Number_of_Lectures-1),6]))
+    except (ValueError,TypeError):
+        Labarotary_Faculty.append("No Data")
+    try:
+        for i in range(0,Number_of_Tutorials):
+            if str(database.iat[int(i+row_number+Number_of_Lectures-1),6])=="nan":
+                Tutorial_Faculty.append("No Data")
+            else: 
+                Tutorial_Faculty.append(str(database.iat[int(i+row_number+Number_of_Lectures-1),6]))
+    except  (ValueError,TypeError):
          Tutorial_Faculty.append("No Data")
-        else: 
-         Tutorial_Faculty.append(str(database.iat[int(i+row_number+Number_of_Lectures-1),6]))
-     
+
 
     
     try:

@@ -42,7 +42,7 @@ def populate_files():
     base_directory = settings.BASE_DIR  
     Files.objects.all().delete()
     Cachefile.objects.all().delete()
-    cache_dir=str(base_directory)+'\Pickles'
+    cache_dir=str(base_directory)+'/Pickles'
     
 
     for root, dirs, files in os.walk(base_directory):
@@ -68,14 +68,15 @@ def populate_files():
                 file_instance.department = department
                 file_instance.file = f"{academic_year}/{semester}/{department}/{file_name}"
                 file_instance.save()
-    files = os.listdir(cache_dir)
-    for  file in files:
+    if(os.path.exists(cache_dir)):
+        files = os.listdir(cache_dir)
+        for  file in files:
    
-        file_path = os.path.join(cache_dir, file    )
-        
-        cache=Cachefile()
-        cache.file=file_path
-        cache.save()
+            file_path = os.path.join(cache_dir, file    )
+
+            cache=Cachefile()
+            cache.file=file_path
+            cache.save()
 
 
 @receiver(user_logged_in, sender=User)
