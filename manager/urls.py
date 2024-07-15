@@ -8,9 +8,9 @@ from manager.models import department_description
 # Trigger the data import process when Django starts
 file_path = "FACULTY & PHD LIST"
 file_path_courses="CDC & ELECTIVE"
-append_excel_data_to_model(file_path)
-append_excel_data_to_model_cdc(file_path_courses,'CDC')
-append_excel_data_to_model_el(file_path_courses,'ELECTIVES')
+# append_excel_data_to_model(file_path)
+# append_excel_data_to_model_cdc(file_path_courses,'CDC')
+# append_excel_data_to_model_el(file_path_courses,'ELECTIVES')
 
 urlpatterns = [
     path('', login_user, name="login"),
